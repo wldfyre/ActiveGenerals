@@ -1,0 +1,60 @@
+<!-- Coordinates below the preset ratios are based on a 540 x 960 image size -->
+<preset name="Generals" xLoc="0.6111" yLoc="0.4271" xDest="0.7685" yDest="0.5104" ClickAndDrag="false" />
+<!--  (330,410) x (415,490) -->
+<preset name="All" xLoc="0.0278" yLoc="0.2031" xDest="0.1852" yDest="0.2656" ClickAndDrag="false" />
+<!-- (15,195) x (100,255) -->
+<preset name="GeneralsListMode" xLoc="0.2241" yLoc="0.2844" xDest="0.2667" yDest="0.3094" ClickAndDrag="false" />
+<!-- (121,273) x (144,297) -->
+<preset name="GeneralsListFavorites" xLoc="0.3241" yLoc="0.2844" xDest="0.3722" yDest="0.3083" ClickAndDrag="false" />
+<!-- (175,273) x (201 x 296) -->
+<preset name="GeneralsListIdle" xLoc="0.4296" yLoc="0.2833" xDest="0.4722" yDest="0.3073" ClickAndDrag="false" />
+<!-- (232,272) x (255,295) -->
+<preset name="GeneralsFirstGeneral" xLoc="0.0407" yLoc="0.2198" xDest="0.4222" yDest="0.5563" ClickAndDrag="false" />
+<!--  (22,211) x (228,534) -->
+<preset name="GeneralsListName" xLoc="0.0" yLoc="0.0990" xDest="0.9815" yDest="0.1302" ClickAndDrag="false" />
+<!-- (0,95) x (539,125) -->
+<preset name="GeneralsListStars" xLoc="0.3889" yLoc="0.1615" xDest="0.6463" yDest="0.1906" ClickAndDrag="false" />
+<!--  (210,155) x (349,183) -->
+<preset name="GeneralsListType" xLoc="0.4815" yLoc="0.6302" xDest="0.5148" yDest="0.6583" ClickAndDrag="false" />
+<!-- (260,605) x (278,632) -->
+<preset name="GeneralsListPower" xLoc="0.1759" yLoc="0.6979" xDest="0.4389" yDest="0.7260" ClickAndDrag="false" />
+<!-- (95,670) x (237,697) -->
+<preset name="GeneralsListExp" xLoc="0.5926" yLoc="0.6979" xDest="0.8648" yDest="0.7260" ClickAndDrag="false" />
+<!-- (320,670) x (467,697) -->
+<preset name="GeneralsListCultivate" xLoc="0.2778" yLoc="0.9323" xDest="0.4907" yDest="0.9896" ClickAndDrag="false" />
+<!-- (150,895) x (265,950) -->
+<preset name="GeneralsListCultivateLeadership" xLoc="0.5185" yLoc="0.1927" xDest="0.6778" yDest="0.2135" ClickAndDrag="false" />
+<!-- (280,185) x (366,205) -->
+<preset name="GeneralsListCultivateAttack" xLoc="0.5185" yLoc="0.2656" xDest="0.6778" yDest="0.2344" ClickAndDrag="false" />
+<!-- (280,225) x (366,225) -->
+<preset name="GeneralsListCultivateDefense" xLoc="0.5185" yLoc="0.2750" xDest="0.6778" yDest="0.2990" ClickAndDrag="false" />
+<!-- (280,264) x (366,287) -->
+<preset name="GeneralsListCultivatePolitics" xLoc="0.5185" yLoc="0.3146" xDest="0.6778" yDest="0.3385" ClickAndDrag="false" />
+<!-- (280,302)  x (366,325) -->
+<preset name="GeneralsListSpecialty" xLoc="0.5093" yLoc="0.9323" xDest="0.7185" yDest="0.9896" ClickAndDrag="false" />
+<!-- (275,895) x (388,950) -->
+<preset name="GeneralsListSpecialty1" xLoc="0.0741" yLoc="0.0885" xDest="0.2370" yDest="0.1802" ClickAndDrag="false" />
+<!-- (40,85) x (128,173) -->
+<preset name="GeneralsListSpecialty2" xLoc="0.2537" yLoc="0.0885" xDest="0.4074" yDest="0.1802" ClickAndDrag="false" />
+<!-- (137,85) x (220,173) -->
+<preset name="GeneralsListSpecialty3" xLoc="0.4241" yLoc="0.0885" xDest="0.5741" yDest="0.1802" ClickAndDrag="false" />
+<!-- (229,85) x (310,173) -->
+<preset name="GeneralsListSpecialty4" xLoc="0.5963" yLoc="0.0885" xDest="0.7444" yDest="0.1802" ClickAndDrag="false" />
+<!-- (322,85) x (402,173) -->
+<preset name="GeneralsListSpecialty5" xLoc="0.7630" yLoc="0.0885" xDest="0.9130" yDest="0.1802" ClickAndDrag="false" />
+<!-- (412,85) x (493,173) -->
+<preset name="GeneralsListSpecialtyName" xLoc="0.0" yLoc="0.5469" xDest="0.9981" yDest="0.5687" ClickAndDrag="false" />
+<!-- (0,525) x (539,546) -->
+<preset name="GeneralsListCovenant" xLoc="0.7370" yLoc="0.9323" xDest="0.9481" yDest="0.9896" ClickAndDrag="false" />
+<!-- (398,895) x (512,950) -->
+<preset name="GeneralsListCovenantImage" xLoc="0.0" yLoc="0.3979" xDest="0.9981" yDest="0.8708" ClickAndDrag="false" />
+<!-- (0,382) x (539,836) can this be put in cell notes and just use a Y/N? -->
+<preset name="GeneralsListCovenantRight" xLoc="0.9037" yLoc="0.2990" xDest="0.9537" yDest="0.3542" ClickAndDrag="false" />
+<!-- (488,287) x (515,340) -->
+<preset name="GeneralsListCovenantCoGenName" xLoc="0.0" yLoc="0.3906" xDest="0.9999" yDest="0.4188" ClickAndDrag="false" />
+<!-- (0,375) x (540.402) -->
+<preset name="GeneralsListCovenantCoGenImage" xLoc="0.3889" yLoc="0.2583" xDest="0.6037" yDest="0.3750" ClickAndDrag="false" />
+<!-- (210,248) x (326,360) -->
+<preset name="GeneralsListMoveRight" xLoc="0.39389" yLoc="0.4635" xDest="0.9907" yDest="0.5208" ClickAndDrag="false" />
+<!-- (507,445) x (535,500) -->
+

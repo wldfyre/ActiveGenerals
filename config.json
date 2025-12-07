@@ -1,0 +1,19 @@
+{
+  "platform_type": "bluestacks",
+  "adb_path": "",
+  "device_id": "127.0.0.1:5555",
+  "ocr_engine": "easyocr",
+  "confidence_threshold": 0.8,
+  "preprocessing_enabled": true,
+  "ocr_languages": [
+    "en"
+  ],
+  "screen_transition_delay": 0.5,
+  "navigation_retry_count": 3,
+  "screenshot_scale": 1.0,
+  "default_export_path": "~/Documents/Evony",
+  "excel_template_path": "Resources/EvonyActiveGenerals.xltx",
+  "auto_open_excel": true,
+  "debug_mode": true,
+  "log_level": "DEBUG"
+}

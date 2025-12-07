@@ -1,0 +1,23 @@
+# Evony Active Generals Tracker Requirements
+
+# GUI Framework
+PyQt5>=5.15.0
+
+# Image Processing
+Pillow>=8.0.0
+opencv-python>=4.5.0
+
+# OCR Engines
+easyocr>=1.4.0
+pytesseract>=0.3.0
+
+# Excel Processing
+openpyxl>=3.0.0
+
+# ADB Communication
+# Note: ADB is typically installed separately
+# pure-python-adb or adb-shell could be added for pure Python ADB
+
+# Development and Testing
+pytest>=6.0.0
+pytest-qt>=4.0.0

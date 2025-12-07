@@ -1,0 +1,6 @@
+{
+    "python.defaultInterpreterPath": "python",
+    "python.terminal.activateEnvironment": true,
+    "debug.openDebug": "openOnDebugBreak",
+    "python.debugger.default": "debugpy"
+}
