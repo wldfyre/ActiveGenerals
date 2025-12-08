@@ -83,14 +83,17 @@ This document outlines the requirements for the Evony Active Generals Tracker, a
 
 ### Requirement 5
 
-**User Story:** As a player, I want to export general information to Excel, so that I can analyze and compare generals outside of the game.
+**User Story:** As a player, I want to export general information to Excel incrementally during collection, so that I don't lose data if the process is interrupted.
 
 #### Acceptance Criteria
 
 1. THE Evony Active Generals Tracker SHALL generate an Excel spreadsheet containing all general data using an xlsx template to initiate a new excel file each time
-2. THE Evony Active Generals Tracker SHALL include both text and image data, exporting items to excel columns as defined in the documentation 
-3. WHEN the player initiates an export, THE Evony Active Generals Tracker SHALL save the file to the player's chosen location
-4. THE Evony Active Generals Tracker SHALL utilize the .xlsx header format to identify columns of data.  The data insertions will begin after the first blank row after the header information
+2. THE Evony Active Generals Tracker SHALL update the Excel file after each general is processed during collection
+3. THE Evony Active Generals Tracker SHALL include both text and image data, exporting items to excel columns as defined in the documentation 
+4. WHEN the player initiates collection, THE Evony Active Generals Tracker SHALL create an incremental export file that is updated in real-time
+5. IF collection is stopped or interrupted, THE Evony Active Generals Tracker SHALL preserve all processed data in the Excel file
+6. WHEN collection completes, THE Evony Active Generals Tracker SHALL offer to save the incremental file to a user-selected permanent location
+7. THE Evony Active Generals Tracker SHALL utilize the .xlsx header format to identify columns of data. The data insertions will begin after the first blank row after the header information (row 6)
 
 ### Requirement 6
 
@@ -125,11 +128,24 @@ This document outlines the requirements for the Evony Active Generals Tracker, a
 
 ### Requirement 8
 
-**User Story:** As a player using different devices, I want a consistent interface across Windows and mobile platforms, so that I can use the tool seamlessly on any device.
+**User Story:** As a player, I want the data to be properly formatted in Excel with multi-line text support, so that I can easily read cultivation, specialty, and covenant information.
 
 #### Acceptance Criteria
 
-1. THE Evony Active Generals Tracker SHALL provide a PyQt5-based user interface that runs on Windows using Bluestacks 5
-2. THE Evony Active Generals Tracker SHALL provide a PyQt5-based user interface that runs on Android devices
-3. THE Evony Active Generals Tracker SHALL maintain consistent UI layout and functionality across all platforms
-4. WHEN running on mobile platforms, THE Evony Active Generals Tracker SHALL adapt touch controls appropriately
+1. THE Evony Active Generals Tracker SHALL enable text wrapping in Excel cells for multi-line data
+2. THE Evony Active Generals Tracker SHALL place stars images in column E and experience ratio in column F
+3. THE Evony Active Generals Tracker SHALL format cultivation data with line breaks between Leadership, Attack, Defense, and Politics stats
+4. THE Evony Active Generals Tracker SHALL format specialty and covenant data with proper line breaks and image positioning
+5. THE Evony Active Generals Tracker SHALL adjust row heights to accommodate multi-line text and images
+
+### Requirement 10
+
+**User Story:** As a player, I want to see real-time progress updates during collection, so that I can monitor the process and stop it if needed.
+
+#### Acceptance Criteria
+
+1. THE Evony Active Generals Tracker SHALL update the generals table in real-time as each general is processed
+2. THE Evony Active Generals Tracker SHALL show live progress indicators including current general count and estimated completion time
+3. THE Evony Active Generals Tracker SHALL display confidence scores and processing status during collection
+4. WHEN the player clicks the "Stop" button, THE Evony Active Generals Tracker SHALL immediately halt collection and preserve all processed data
+5. THE Evony Active Generals Tracker SHALL provide immediate feedback on collection status and data availability

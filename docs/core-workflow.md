@@ -40,11 +40,13 @@ graph TD
         L --> M[Navigate to Covenant Screen]
         M --> N[Extract Covenant Data]
         N --> O[Store Complete General Data]
-        O --> P[Close Details Screen]
-        P --> E
-    E --> Q[Export to Excel]
-    Q --> R[Reset Generals List State]
-    R --> S[Cleanup & Disconnect]
+        O --> P[Update Excel File Incrementally]
+        P --> Q[Update UI Table in Real-time]
+        Q --> R[Close Details Screen]
+        R --> E
+    E --> S[Final Excel Export (Optional)]
+    S --> T[Reset Generals List State]
+    T --> U[Cleanup & Disconnect]
 
 
 ## Detailed Workflow Steps
@@ -337,7 +339,19 @@ graph TD
 - Create `General` data object with extracted information
 - Store confidence scores for quality tracking
 - Add to generals collection in application controller
+- **Update Excel file incrementally** after each general is processed
+- **Update UI table in real-time** to show progress during collection
 - Update progress information
+
+**Incremental Export Benefits**:
+- Data is saved immediately, preventing loss if collection is interrupted
+- Users can review partial results during long collection processes
+- Excel file remains available even if "Stop" button is clicked
+
+**Real-time UI Updates**:
+- Table refreshes after each general is processed
+- Shows live progress instead of waiting for completion
+- Provides immediate feedback on collection status
 
 **Data Model Structure**:
 ```python

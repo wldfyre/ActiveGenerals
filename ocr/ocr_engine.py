@@ -34,7 +34,9 @@ class OCREngine:
         self.config = config
         self.engine_type = config.get('ocr_engine', 'easyocr')
         self.confidence_threshold = config.get('confidence_threshold', 0.8)
+        self.postprocessed_confidence_threshold = config.get('postprocessed_confidence_threshold', 0.5)  # Lower threshold for postprocessed images
         self.preprocessing_enabled = config.get('preprocessing_enabled', True)
+        self.character_recognition_enhancement = config.get('character_recognition_enhancement', True)
         self.languages = config.get('ocr_languages', ['en'])
 
         # Region definitions (pixel coordinates for cropping)
@@ -175,17 +177,13 @@ class OCREngine:
             # Preprocess if enabled
             if self.preprocessing_enabled:
                 # Apply region-specific preprocessing
-                if region == "GeneralsListExp":
-                    # Special preprocessing for experience text (light yellow on dark background)
-                    image = self._enhance_light_text(image)
-                    image = self._remove_green_elements(image)
-                    # Convert to grayscale and enhance
-                    image = image.convert('L')
-                    from PIL import ImageEnhance
-                    enhancer = ImageEnhance.Contrast(image)
-                    image = enhancer.enhance(2.5)  # Higher contrast for light text
-                    enhancer = ImageEnhance.Sharpness(image)
-                    image = enhancer.enhance(2.0)  # More sharpening for light text
+                if region in ["GeneralsListExp", "GeneralsListName", "GeneralsListLevel", "GeneralsListPower", "GeneralsListPower1", "GeneralsListPower2", "GeneralsListExp1", "GeneralsListExp2"]:
+                    # Special preprocessing for general name/level text (specific light colors)
+                    logger.debug(f"Applying general text enhancement for region: {region}")
+                    image = self._enhance_general_text(image)
+                    # Add character recognition enhancement for regions with numbers/letters
+                    if self.character_recognition_enhancement:
+                        image = self._enhance_character_recognition(image)
                 else:
                     # Standard preprocessing for other regions
                     image = self.preprocess_image(image)
@@ -204,12 +202,15 @@ class OCREngine:
                 if not results:
                     return None
                 
+                # Use lower confidence threshold for postprocessed images
+                threshold = self.postprocessed_confidence_threshold if self.preprocessing_enabled else self.confidence_threshold
+                
                 # Combine all detected text
                 text_parts = []
                 total_confidence = 0.0
                 
                 for (bbox, text, confidence) in results:
-                    if confidence >= self.confidence_threshold:
+                    if confidence >= threshold:
                         text_parts.append(text)
                         total_confidence += confidence
                 
@@ -303,6 +304,11 @@ class OCREngine:
             # Convert PIL to numpy array
             image_np = np.array(image)
 
+            # Ensure image is RGB (remove alpha channel if present)
+            if image_np.shape[-1] == 4:
+                # Convert RGBA to RGB by removing alpha channel
+                image_np = image_np[:, :, :3]
+
             # Convert RGB to HSV for better color detection
             hsv = cv2.cvtColor(image_np, cv2.COLOR_RGB2HSV)
 
@@ -372,6 +378,60 @@ class OCREngine:
             # Fallback to a neutral gray
             return np.array([128, 128, 128])
 
+    def _enhance_general_text(self, image: Image.Image) -> Image.Image:
+        """Enhance general name/level text by converting specific light colors to high contrast"""
+        try:
+            import cv2
+            import numpy as np
+            
+            # Convert PIL to numpy array
+            image_np = np.array(image)
+            
+            # Ensure image is RGB (remove alpha channel if present)
+            if image_np.shape[-1] == 4:
+                # Convert RGBA to RGB by removing alpha channel
+                image_np = image_np[:, :, :3]
+            
+            # Define the specific text colors mentioned by user
+            text_color1 = np.array([255, 251, 214])  # First text color
+            text_color2 = np.array([222, 214, 181])  # Second text color
+            
+            # Create masks for pixels close to the text colors
+            # Use a tolerance for color matching
+            tolerance = 30  # Allow some variation in color values
+            
+            # Calculate color distances
+            diff1 = np.abs(image_np.astype(np.int32) - text_color1)
+            diff2 = np.abs(image_np.astype(np.int32) - text_color2)
+            
+            # Create masks for pixels within tolerance of text colors
+            mask1 = np.all(diff1 <= tolerance, axis=2)
+            mask2 = np.all(diff2 <= tolerance, axis=2)
+            text_mask = np.logical_or(mask1, mask2)
+            
+            # Create high contrast result image
+            result = np.full_like(image_np, 255)  # Start with white background
+            
+            # Set text pixels to black
+            result[text_mask] = [0, 0, 0]
+            
+            # Convert back to PIL Image
+            result_image = Image.fromarray(result)
+            
+            text_pixel_count = np.sum(text_mask)
+            logger.debug(f"Enhanced general text: converted {text_pixel_count} pixels to black out of {image_np.shape[0] * image_np.shape[1]} total pixels")
+            return result_image
+            
+        except ImportError:
+            logger.warning("OpenCV not available, applying basic enhancement")
+            # Fallback: simple brightness/contrast adjustment
+            from PIL import ImageEnhance
+            enhancer = ImageEnhance.Contrast(image)
+            return enhancer.enhance(2.0)
+        except Exception as e:
+            logger.error(f"Failed to enhance general text: {e}")
+            return image
+
     def _enhance_light_text(self, image: Image.Image) -> Image.Image:
         """Enhance light colored text (like yellow) on dark backgrounds"""
         try:
@@ -380,6 +440,11 @@ class OCREngine:
             
             # Convert PIL to numpy array
             image_np = np.array(image)
+            
+            # Ensure image is RGB (remove alpha channel if present)
+            if image_np.shape[-1] == 4:
+                # Convert RGBA to RGB by removing alpha channel
+                image_np = image_np[:, :, :3]
             
             # Convert to HSV for better color analysis
             hsv = cv2.cvtColor(image_np, cv2.COLOR_RGB2HSV)
@@ -466,4 +531,102 @@ class OCREngine:
             return image
         except Exception as e:
             logger.error(f"Image preprocessing error: {e}")
+            return image
+
+    def check_template_match(self, image_bytes: bytes, region: str, template_path: str, threshold: float = 0.8) -> bool:
+        """Check if a template image matches the specified region"""
+        try:
+            # Extract image from region
+            region_image_bytes = self.extract_image(image_bytes, region)
+            if not region_image_bytes:
+                logger.warning(f"Could not extract image from region: {region}")
+                return False
+
+            # Convert to PIL images
+            region_image = self._bytes_to_image(region_image_bytes)
+            template_image = Image.open(template_path)
+
+            if not region_image or not template_image:
+                logger.warning("Could not load images for template matching")
+                return False
+
+            # Convert to grayscale for comparison
+            region_gray = region_image.convert('L')
+            template_gray = template_image.convert('L')
+
+            # Resize template to match region size if needed
+            if region_gray.size != template_gray.size:
+                template_gray = template_gray.resize(region_gray.size, Image.Resampling.LANCZOS)
+
+            # Convert to numpy arrays
+            import numpy as np
+            region_np = np.array(region_gray)
+            template_np = np.array(template_gray)
+
+            # Calculate correlation coefficient
+            correlation = np.corrcoef(region_np.flatten(), template_np.flatten())[0, 1]
+
+            # Handle NaN case (identical images)
+            if np.isnan(correlation):
+                correlation = 1.0
+
+            match = correlation >= threshold
+            logger.debug(f"Template match for {region} vs {template_path}: correlation={correlation:.3f}, threshold={threshold}, match={match}")
+
+            return match
+
+        except Exception as e:
+            logger.error(f"Template matching error: {e}")
+            return False
+
+    def _enhance_character_recognition(self, image: Image.Image) -> Image.Image:
+        """Enhance character recognition with very conservative morphological operations"""
+        try:
+            import cv2
+            import numpy as np
+
+            # Convert PIL to numpy array
+            image_np = np.array(image)
+
+            # Ensure image is RGB (remove alpha channel if present)
+            if image_np.shape[-1] == 4:
+                image_np = image_np[:, :, :3]
+
+            # Convert to grayscale for morphological operations
+            gray = cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY)
+
+            # Apply threshold to get binary image
+            _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+            # Very conservative morphological operations to avoid removing thin characters
+
+            # 1. Only close very small gaps (1x1 kernel, minimal impact)
+            kernel_close = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
+            closed = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel_close)
+
+            # 2. Skip erosion entirely - it was removing thin characters like '1' and 'I'
+
+            # 3. Use minimal morphological operations
+            # Detect horizontal strokes with minimal kernel
+            horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
+            horizontal_lines = cv2.morphologyEx(closed, cv2.MORPH_OPEN, horizontal_kernel)
+
+            # 4. Combine with minimal enhancement
+            # Very slight strengthening of horizontal elements
+            enhanced = cv2.addWeighted(closed, 1.0, horizontal_lines, 0.1, 0)
+
+            # 5. Ensure we don't lose any text - use OR operation to preserve original
+            final = cv2.bitwise_or(enhanced, binary)
+
+            # Convert back to PIL Image
+            result_image = Image.fromarray(final)
+
+            logger.debug("Applied conservative character recognition enhancement")
+            return result_image
+
+        except ImportError:
+            logger.warning("OpenCV not available, skipping character recognition enhancement")
+            return image
+        except Exception as e:
+            logger.error(f"Failed to enhance character recognition: {e}")
             return image

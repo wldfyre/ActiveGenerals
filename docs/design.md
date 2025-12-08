@@ -182,7 +182,9 @@ class General:
 - Store both text and images (stars, specialty icons)
 - Track confidence scores per field
 - Flag entire general as uncertain if any field < 80% confidence
-- Support incremental updates (for refresh functionality)
+- Support incremental updates (for real-time Excel export)
+- **Incremental Excel saving**: Prevents data loss if collection is interrupted
+- **Real-time UI updates**: Table refreshes after each general is processed
 
 ### 5. Excel Exporter
 
@@ -204,18 +206,20 @@ class ExcelExporter:
 ```
 
 **Formatting Rules**:
-- Headers: Bold, centered, background color
-- Text columns: Left-aligned, vertical center
+- Headers: Bold, centered, background color (rows 1-5 preserved from template)
+- Text columns: Left-aligned, vertical center, text wrapping enabled for multi-line content
 - Numeric columns: Right-aligned, comma formatting, vertical center
 - Image columns: Centered, cell height adjusted to fit image
 - All rows match height of image-containing cells
+- **Data starts at row 6** to preserve template header structure
 
 **Design Decisions**:
 - Use openpyxl library for Excel manipulation
 - Support template-based export (pre-formatted workbook)
+- **Incremental export**: Update Excel file after each general to prevent data loss
 - Always clear existing data before export (no refresh, full regeneration)
 - Anchor images to cells to prevent shifting
-- first row for adding general data will be row 6 in the excel spreadsheet
+- Enable text wrapping for multi-line cultivation, specialty, and covenant data
 
 ### 6. Application Controller
 
@@ -225,7 +229,7 @@ class ExcelExporter:
 ```python
 class ApplicationController:
     def initialize_platform(platform_type: str) -> bool
-    def collect_all_generals() -> List[General]
+    def collect_all_generals(progress_callback: Callable = None, export_path: str = None) -> List[General]
     def export_to_excel(file_path: str) -> bool
     def get_progress() -> ProgressInfo
 ```
@@ -234,15 +238,18 @@ class ApplicationController:
 1. Connect to platform
 2. Navigate to generals list
 3. Count total generals (for progress tracking)
-4. For each general:
+4. **Create incremental Excel file** for real-time saving
+5. For each general:
    - Open details screen
    - Capture screenshots
    - Extract data via OCR
    - Extract images
    - Store in data model
+   - **Update Excel file incrementally** (prevents data loss on interruption)
+   - **Update UI table in real-time** (shows live progress)
    - Update progress
-5. Export to Excel
-6. Disconnect from platform
+6. **Final Excel export** (optional - data already saved incrementally)
+7. Disconnect from platform
 
 **Design Decisions**:
 - Implement progress callbacks for UI updates

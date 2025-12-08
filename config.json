@@ -15,5 +15,7 @@
   "excel_template_path": "Resources/EvonyActiveGenerals.xltx",
   "auto_open_excel": true,
   "debug_mode": true,
-  "log_level": "DEBUG"
+  "log_level": "DEBUG",
+  "character_recognition_enhancement": false,
+  "postprocessed_confidence_threshold": 0.5
 }

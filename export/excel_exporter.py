@@ -7,6 +7,8 @@ from typing import List, Optional, Any
 from pathlib import Path
 import openpyxl
 from openpyxl.drawing.image import Image as XLImage
+from openpyxl.drawing.spreadsheet_drawing import TwoCellAnchor, AnchorMarker, OneCellAnchor
+from openpyxl.drawing.xdr import XDRPoint2D, XDRPositiveSize2D
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 from io import BytesIO
@@ -22,28 +24,39 @@ class ExcelExporter:
         self.config = config
         self.template_path = config.get('excel_template_path', 'Resources/EvonyActiveGenerals.xltx')
 
-    def export_generals(self, generals: List[General], file_path: str, count_text: str = "") -> bool:
+    def export_generals(self, generals: List[General], file_path: str, count_text: str = "", incremental: bool = False) -> bool:
         """Export generals data to Excel file"""
         try:
-            logger.info(f"Exporting {len(generals)} generals to {file_path}")
+            logger.info(f"Exporting {len(generals)} generals to {file_path} (incremental={incremental})")
+            
+            # Debug: Log general data
+            for i, gen in enumerate(generals):
+                logger.debug(f"General {i+1}: name='{gen.name}', level={gen.level}, power={gen.power}, has_cultivation={bool(gen.cultivation_data)}, has_specialty={bool(gen.specialty_data)}, has_covenant={bool(gen.covenant_data)}")
 
-            # Create or load workbook
-            workbook = self.create_workbook(self.template_path)
+            # For incremental exports, load existing file if it exists
+            if incremental and Path(file_path).exists():
+                logger.info(f"Loading existing incremental file: {file_path}")
+                workbook = openpyxl.load_workbook(file_path)
+            else:
+                # Create or load workbook from template
+                workbook = self.create_workbook(self.template_path)
+                
             if not workbook:
-                logger.error("Failed to create workbook")
+                logger.error("Failed to create/load workbook")
                 return False
 
             worksheet = workbook.active
             if not worksheet:
                 worksheet = workbook.create_sheet("Generals")
 
-            # Write count text to B3 if provided
-            if count_text:
+            # Write count text to B3 if provided (only for non-incremental)
+            if count_text and not incremental:
                 worksheet.cell(row=3, column=2, value=count_text)
                 logger.info(f"Wrote count text to B3: {count_text}")
 
-            # Clear existing data rows (keep headers)
-            self.clear_data_rows(worksheet)
+            # Clear existing data rows (keep headers) - only for non-incremental
+            if not incremental:
+                self.clear_data_rows(worksheet)
 
             # Populate with general data
             self.populate_data(worksheet, generals)
@@ -76,8 +89,8 @@ class ExcelExporter:
                 # Create headers
                 worksheet = workbook.active
                 headers = [
-                    "Name", "Level", "Type", "Power", "Experience Ratio",
-                    "Stars", "Cultivation", "Specialty", "Covenant", "Uncertain"
+                    "Name", "Level", "Type", "Power", "Stars", "Experience Ratio",
+                    "Cultivation", "Specialty", "Covenant", "Uncertain"
                 ]
                 for col, header in enumerate(headers, 1):
                     worksheet.cell(row=1, column=col, value=header)
@@ -89,11 +102,11 @@ class ExcelExporter:
     def clear_data_rows(self, worksheet: Any) -> None:
         """Clear existing data rows in workbook"""
         try:
-            # Clear from row 6 onwards (keep headers and any template content above)
+            # Clear from row 6 onwards (keep headers in rows 1-5)
             for row in range(6, worksheet.max_row + 1):
                 for col in range(1, worksheet.max_column + 1):
                     worksheet.cell(row=row, column=col).value = None
-            logger.info("Cleared existing data rows")
+            logger.info(f"Cleared data rows from 6 to {worksheet.max_row}")
         except Exception as e:
             logger.error(f"Failed to clear data rows: {e}")
 
@@ -101,12 +114,17 @@ class ExcelExporter:
         """Populate worksheet with general data"""
         try:
             for row, general in enumerate(generals, 6):  # Start from row 6
+                logger.debug(f"Populating row {row} with general: name={general.name}, level={general.level}, power={general.power}")
+                logger.debug(f"  exp_ratio={general.exp_ratio}, cultivation={general.cultivation_data[:50] if general.cultivation_data else 'None'}")
+                logger.debug(f"  specialty={general.specialty_data[:50] if general.specialty_data else 'None'}")
+                logger.debug(f"  covenant={general.covenant_data[:50] if general.covenant_data else 'None'}")
+                
                 worksheet.cell(row=row, column=1, value=general.name or "")
                 worksheet.cell(row=row, column=2, value=general.level)
                 worksheet.cell(row=row, column=3, value=general.type or "")
                 worksheet.cell(row=row, column=4, value=general.power)
-                worksheet.cell(row=row, column=5, value=general.exp_ratio or "")
-                # Stars column (6) will have image
+                # Stars column (5) will have image
+                worksheet.cell(row=row, column=6, value=general.exp_ratio or "")
                 worksheet.cell(row=row, column=7, value=general.cultivation_data or "")
                 worksheet.cell(row=row, column=8, value=general.specialty_data or "")
                 worksheet.cell(row=row, column=9, value=general.covenant_data or "")
@@ -124,7 +142,7 @@ class ExcelExporter:
             header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
             header_alignment = Alignment(horizontal="center", vertical="center")
 
-            data_alignment = Alignment(horizontal="left", vertical="top")
+            data_alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
             border = Border(
                 left=Side(style='thin'),
                 right=Side(style='thin'),
@@ -184,7 +202,7 @@ class ExcelExporter:
                 worksheet.row_dimensions[row].height = max_height
 
             # Special width for stars column (images)
-            worksheet.column_dimensions['F'].width = 15
+            worksheet.column_dimensions['E'].width = 15
 
             logger.info("Applied cell formatting")
         except Exception as e:
@@ -205,7 +223,13 @@ class ExcelExporter:
                         img.height = 20
 
                         # Add image to worksheet
-                        worksheet.add_image(img, f'F{row}')
+                        worksheet.add_image(img, f'E{row}')
+
+                        # Center the image horizontally in the cell
+                        if hasattr(img.anchor, 'pos'):
+                            # Approximate center position: 22 pixels from left edge
+                            img.anchor.pos.x = 22 * 9525  # 22 pixels * 9525 EMU per pixel
+                            img.anchor.pos.y = 0  # Keep at top
 
                     except Exception as img_error:
                         logger.warning(f"Failed to insert image for general {general.name}: {img_error}")
@@ -217,11 +241,10 @@ class ExcelExporter:
                         image_stream = BytesIO(general.type_image)
                         img = XLImage(image_stream)
 
-                        # Resize image to fit cell
-                        img.width = 40
-                        img.height = 20
+                        # Keep original dimensions - do not resize
+                        # Image will be centered in the cell by default
 
-                        # Add image to worksheet
+                        # Add image to worksheet, centered in cell
                         worksheet.add_image(img, f'C{row}')
 
                     except Exception as img_error:

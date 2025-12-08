@@ -63,7 +63,7 @@ class ApplicationController:
             logger.error(f"Platform initialization error: {e}")
             return False
 
-    def collect_all_generals(self, progress_callback: Optional[Callable] = None) -> List[General]:
+    def collect_all_generals(self, progress_callback: Optional[Callable] = None, export_path: Optional[str] = None) -> List[General]:
         """Collect data for all generals"""
         if not self._check_initialization():
             raise RuntimeError("Platform not properly initialized")
@@ -117,6 +117,19 @@ class ApplicationController:
                 general = self._collect_single_general(i + 1, progress_callback)
                 generals.append(general)
                 self.processed_generals = i + 1
+
+                # Update Excel file incrementally if export path is provided
+                if export_path and generals:
+                    try:
+                        # Debug: Log current generals data
+                        logger.debug(f"About to export {len(generals)} generals incrementally")
+                        for idx, gen in enumerate(generals):
+                            logger.debug(f"  General {idx+1}: name='{gen.name}', level={gen.level}, power={gen.power}, cultivation_len={len(gen.cultivation_data) if gen.cultivation_data else 0}")
+                        
+                        self.exporter.export_generals(generals, export_path, self.count_text, incremental=True)
+                        logger.debug(f"Incremental Excel export completed for {len(generals)} generals")
+                    except Exception as e:
+                        logger.warning(f"Failed to update Excel file incrementally: {e}")
 
                 # Update progress
                 percentage = 15 + (i + 1) / self.total_generals * 80  # 15-95%
@@ -184,6 +197,8 @@ class ApplicationController:
             # Extract main general data
             self._extract_main_general_data(general, screenshot)
 
+            logger.info(f"Extracted main data for {general.name}: level={general.level}, power={general.power}, exp={general.exp_ratio}")
+
             # Navigate to cultivation screen and extract data
 
             if self.navigator.navigate_to_cultivation_screen():
@@ -198,16 +213,26 @@ class ApplicationController:
                 spec_screenshot = self.platform.capture_screenshot()
                 if spec_screenshot:
                     self._extract_specialty_data(general, spec_screenshot)
+                    logger.info(f"Extracted specialty data for {general.name}: {general.specialty_data[:100] if general.specialty_data else 'None'}")
+                else:
+                    logger.warning(f"Failed to capture specialty screenshot for {general.name}")
                 # Return to general details screen
                 self.navigator.close_general_details()
+            else:
+                logger.warning(f"Failed to navigate to specialties screen for {general.name}")
 
             # Navigate to covenant screen and extract data
             if self.navigator.navigate_to_covenant_screen():
                 covenant_screenshot = self.platform.capture_screenshot()
                 if covenant_screenshot:
                     self._extract_covenant_data(general, covenant_screenshot)
+                    logger.info(f"Extracted covenant data for {general.name}: {general.covenant_data[:100] if general.covenant_data else 'None'}")
+                else:
+                    logger.warning(f"Failed to capture covenant screenshot for {general.name}")
                 # Return to general details screen
                 self.navigator.close_general_details()
+            else:
+                logger.warning(f"Failed to navigate to covenant screen for {general.name}")
 
             # Determine if general is uncertain
             confidence_threshold = self.config.get('confidence_threshold', 0.8)
@@ -224,27 +249,55 @@ class ApplicationController:
 
     def _extract_main_general_data(self, general: General, screenshot) -> None:
         """Extract main general information from screenshot"""
-        # Extract name
+        # Extract name and level
         name_result = self.ocr_engine.extract_text(screenshot, "GeneralsListName")
-        general.name = name_result.text if name_result else ""
+        if name_result and name_result.text:
+            full_text = name_result.text.strip()
+            # Parse "Lv ## Name" format
+            if full_text.startswith("Lv "):
+                # Find the space after the level number
+                level_end = full_text.find(" ", 3)  # Start searching after "Lv "
+                if level_end != -1:
+                    try:
+                        level_str = full_text[3:level_end]
+                        general.level = int(level_str)
+                        general.name = full_text[level_end + 1:].strip()
+                    except ValueError:
+                        # If level parsing fails, treat whole text as name
+                        general.name = full_text
+                        general.level = None
+                else:
+                    # No space found after "Lv", treat as name only
+                    general.name = full_text
+                    general.level = None
+            else:
+                # Doesn't start with "Lv", treat whole text as name
+                general.name = full_text
+                general.level = None
+        else:
+            general.name = ""
+            general.level = None
         general.confidence_scores['name'] = name_result.confidence if name_result else 0.0
 
-        # Extract level
-        level_result = self.ocr_engine.extract_number(screenshot, "GeneralsListLevel")
-        general.level = level_result.value if level_result else None
-        general.confidence_scores['level'] = level_result.confidence if level_result else 0.0
-
-        # Extract type image
+               # Extract type image
         type_image = self.ocr_engine.extract_image(screenshot, "GeneralsListType")
         general.type_image = type_image or b""
 
         # Extract power
-        power_result = self.ocr_engine.extract_number(screenshot, "GeneralsListPower")
+        # Check which power location to use
+        template_path = "Resources/GeneralsListPowerLocation.png"
+        use_location_1 = False
+        if Path(template_path).exists():
+            use_location_1 = self.ocr_engine.check_template_match(screenshot, "GeneralsListPowerLocation", template_path)
+        
+        power_region = "GeneralsListPower1" if use_location_1 else "GeneralsListPower2"
+        power_result = self.ocr_engine.extract_text(screenshot, power_region)
         general.power = power_result.value if power_result else None
         general.confidence_scores['power'] = power_result.confidence if power_result else 0.0
 
         # Extract experience ratio
-        exp_result = self.ocr_engine.extract_text(screenshot, "GeneralsListExp")
+        exp_region = "GeneralsListExp1" if use_location_1 else "GeneralsListExp2"
+        exp_result = self.ocr_engine.extract_text(screenshot, exp_region)
         general.exp_ratio = exp_result.text if exp_result else ""
         general.confidence_scores['exp_ratio'] = exp_result.confidence if exp_result else 0.0
 
@@ -281,8 +334,10 @@ class ApplicationController:
                 cultivation_parts.append(f"{stat}: Unknown")
                 total_confidence += 0.0
 
-        general.cultivation_data = "\n".join(cultivation_parts)
+        general.cultivation_data = chr(10).join(cultivation_parts)
         general.confidence_scores['cultivation'] = total_confidence / len(stats)
+        
+        logger.info(f"Extracted cultivation data: {general.cultivation_data}")
 
     def _extract_specialty_data(self, general: General, screenshot) -> None:
         """Extract specialty data from screenshot"""
@@ -324,7 +379,7 @@ class ApplicationController:
                 specialty_parts.append("Unknown Specialty")
                 total_confidence += 0.0
 
-        general.specialty_data = "\n".join(specialty_parts)
+        general.specialty_data = chr(10).join(specialty_parts)
         general.confidence_scores['specialty'] = total_confidence / 5
 
     def _extract_covenant_data(self, general: General, screenshot) -> None:
@@ -340,7 +395,7 @@ class ApplicationController:
             return
 
         # Wait for covenant general screen to load
-        time.sleep(1.0)
+        time.sleep(0.5)
 
         # Navigate through covenant sub-screens
         for i in range(4):  # main general +3 covenant generals
@@ -370,17 +425,17 @@ class ApplicationController:
         # Close covenant sub-screen
         self.navigator.close_covenant_subscreen()
 
-        general.covenant_data = "\n".join(covenant_parts)
+        general.covenant_data = chr(10).join(covenant_parts)
         general.confidence_scores['covenant'] = total_confidence / 3
 
-    def export_to_excel(self, file_path: str, generals: List[General]) -> bool:
+    def export_to_excel(self, file_path: str, generals: List[General], incremental: bool = False) -> bool:
         """Export generals data to Excel"""
         if not self.exporter:
             logger.error("Excel exporter not initialized")
             return False
 
         try:
-            return self.exporter.export_generals(generals, file_path, self.count_text)
+            return self.exporter.export_generals(generals, file_path, self.count_text, incremental)
         except Exception as e:
             logger.error(f"Export error: {e}")
             return False
