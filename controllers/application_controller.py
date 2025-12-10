@@ -4,7 +4,7 @@ Application controller for Evony Active Generals Tracker
 
 import time
 import logging
-from typing import List, Dict, Any, Callable, Optional
+from typing import List, Dict, Any, Callable, Optional, Tuple
 from pathlib import Path
 
 from models.general import General
@@ -26,6 +26,14 @@ class ApplicationController:
         self.exporter = None
 
         # Progress tracking
+        self.start_time = None
+        self.total_generals = 0
+        self.count_text = ""
+        self.processed_generals = 0
+
+    def reset_collection_state(self) -> None:
+        """Reset all collection state for a fresh start"""
+        logger.info("Resetting collection state")
         self.start_time = None
         self.total_generals = 0
         self.count_text = ""
@@ -63,13 +71,17 @@ class ApplicationController:
             logger.error(f"Platform initialization error: {e}")
             return False
 
-    def collect_all_generals(self, progress_callback: Optional[Callable] = None, export_path: Optional[str] = None) -> List[General]:
+    def collect_all_generals(self, progress_callback: Optional[Callable] = None, export_path: Optional[str] = None) -> Tuple[List[General], Optional[str]]:
         """Collect data for all generals"""
         if not self._check_initialization():
             raise RuntimeError("Platform not properly initialized")
 
+        # Reset collection state for fresh start
+        self.reset_collection_state()
+
         self.start_time = time.time()
         generals = []
+        excel_file_path = None
 
         try:
             # Navigate to generals list
@@ -105,6 +117,26 @@ class ApplicationController:
 
             logger.info(f"Found {self.total_generals} generals to process (count text: {self.count_text})")
 
+            # Always create timestamped Excel file in ./Spreadsheets directory
+            # Create Spreadsheets directory if it doesn't exist
+            spreadsheets_dir = Path("./Spreadsheets")
+            spreadsheets_dir.mkdir(exist_ok=True)
+            
+            # Create timestamped filename
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            excel_filename = f"ActiveGenerals_{timestamp}.xlsx"
+            excel_path = spreadsheets_dir / excel_filename
+            
+            # Create initial Excel file from template
+            initial_generals = []  # Empty list for initial creation
+            if not self.exporter.export_generals(initial_generals, str(excel_path), self.count_text, incremental=False):
+                logger.warning(f"Failed to create initial Excel file: {excel_path}")
+                excel_path = None
+            else:
+                logger.info(f"Created Excel file: {excel_path}")
+                excel_file_path = str(excel_path)
+
             # Process each general
             for i in range(self.total_generals):
                 if progress_callback:
@@ -118,18 +150,14 @@ class ApplicationController:
                 generals.append(general)
                 self.processed_generals = i + 1
 
-                # Update Excel file incrementally if export path is provided
-                if export_path and generals:
+                # Write general to Excel immediately
+                if excel_path and general:
                     try:
-                        # Debug: Log current generals data
-                        logger.debug(f"About to export {len(generals)} generals incrementally")
-                        for idx, gen in enumerate(generals):
-                            logger.debug(f"  General {idx+1}: name='{gen.name}', level={gen.level}, power={gen.power}, cultivation_len={len(gen.cultivation_data) if gen.cultivation_data else 0}")
-                        
-                        self.exporter.export_generals(generals, export_path, self.count_text, incremental=True)
-                        logger.debug(f"Incremental Excel export completed for {len(generals)} generals")
+                        row_index = i + 7  # Start from row 7 (after headers)
+                        if not self.exporter.append_general(general, str(excel_path), row_index):
+                            logger.warning(f"Failed to append general {i+1} to Excel file")
                     except Exception as e:
-                        logger.warning(f"Failed to update Excel file incrementally: {e}")
+                        logger.warning(f"Failed to write general {i+1} to Excel: {e}")
 
                 # Update progress
                 percentage = 15 + (i + 1) / self.total_generals * 80  # 15-95%
@@ -165,7 +193,7 @@ class ApplicationController:
             })
 
             logger.info(f"Successfully collected data for {len(generals)} generals")
-            return generals
+            return generals, excel_file_path
 
         except Exception as e:
             logger.error(f"Collection failed: {e}")
@@ -213,7 +241,7 @@ class ApplicationController:
                 spec_screenshot = self.platform.capture_screenshot()
                 if spec_screenshot:
                     self._extract_specialty_data(general, spec_screenshot)
-                    logger.info(f"Extracted specialty data for {general.name}: {general.specialty_data[:100] if general.specialty_data else 'None'}")
+                    logger.info(f"Extracted specialty data for {general.name}: {general.specialty_names[:100] if general.specialty_names else 'None'}")
                 else:
                     logger.warning(f"Failed to capture specialty screenshot for {general.name}")
                 # Return to general details screen
@@ -298,12 +326,13 @@ class ApplicationController:
         # Extract experience ratio
         exp_region = "GeneralsListExp1" if use_location_1 else "GeneralsListExp2"
         exp_result = self.ocr_engine.extract_text(screenshot, exp_region)
-        general.exp_ratio = exp_result.text if exp_result else ""
+        general.exp_ratio = exp_result.text.strip() if exp_result else ""
         general.confidence_scores['exp_ratio'] = exp_result.confidence if exp_result else 0.0
 
         # Extract stars image
         stars_image = self.ocr_engine.extract_image(screenshot, "GeneralsListStars")
         general.stars_image = stars_image or b""
+        logger.debug(f"Extracted stars image for {general.name}: {len(general.stars_image)} bytes")
 
     def _parse_general_name(self, raw_name: str) -> str:
         """Parse general name to remove level prefix"""
@@ -328,10 +357,10 @@ class ApplicationController:
             preset_name = f"GeneralsListCultivate{stat}"
             result = self.ocr_engine.extract_text(screenshot, preset_name)
             if result and result.text:
-                cultivation_parts.append(f"{stat}: {result.text}")
+                cultivation_parts.append(result.text.strip())
                 total_confidence += result.confidence
             else:
-                cultivation_parts.append(f"{stat}: Unknown")
+                cultivation_parts.append("Unknown")
                 total_confidence += 0.0
 
         general.cultivation_data = chr(10).join(cultivation_parts)
@@ -341,7 +370,8 @@ class ApplicationController:
 
     def _extract_specialty_data(self, general: General, screenshot) -> None:
         """Extract specialty data from screenshot"""
-        specialty_parts = []
+        specialty_names = []
+        specialty_images = []
         total_confidence = 0.0
 
         for i in range(1, 6):  # 5 specialties
@@ -349,7 +379,7 @@ class ApplicationController:
             specialty_click_preset = f"GeneralsListSpecialty{i}"
             if not self.navigator.tap_preset(specialty_click_preset):
                 logger.warning(f"Failed to click on specialty {i}")
-                specialty_parts.append("Unknown Specialty")
+                specialty_names.append("Unknown Specialty")
                 total_confidence += 0.0
                 continue
 
@@ -360,12 +390,12 @@ class ApplicationController:
             new_screenshot = self.platform.capture_screenshot()
             if not new_screenshot:
                 logger.warning(f"Failed to take screenshot after clicking specialty {i}")
-                specialty_parts.append("Unknown Specialty")
+                specialty_names.append("Unknown Specialty")
                 total_confidence += 0.0
                 continue
 
             # Extract image
-            image_preset = f"GeneralsListSpecialtyImage{i}"
+            image_preset = f"GeneralsListSpecialty{i}"
             image_data = self.ocr_engine.extract_image(new_screenshot, image_preset)
 
             # Extract name (yellow text on dark background)
@@ -373,24 +403,31 @@ class ApplicationController:
             name_result = self.ocr_engine.extract_text(new_screenshot, name_preset)
 
             if image_data and name_result and name_result.text:
-                specialty_parts.append(f"{image_data.decode('latin-1')} {name_result.text}")
+                specialty_names.append(name_result.text.strip())
+                specialty_images.append(image_data)
                 total_confidence += name_result.confidence
             else:
-                specialty_parts.append("Unknown Specialty")
+                specialty_names.append("Unknown Specialty")
                 total_confidence += 0.0
 
-        general.specialty_data = chr(10).join(specialty_parts)
+        general.specialty_names = chr(10).join(specialty_names)
+        general.specialty_combined_image = self.exporter.combine_images_side_by_side(specialty_images)
         general.confidence_scores['specialty'] = total_confidence / 5
 
     def _extract_covenant_data(self, general: General, screenshot) -> None:
         """Extract covenant data from screenshot"""
         covenant_parts = []
+        covenant_names = []
+        covenant_images = []
         total_confidence = 0.0
 
         # First, click on the covenant general button to access covenant generals
         if not self.navigator.tap_preset("GeneralsListCovenantGeneral"):
             logger.warning("Failed to click on covenant general button")
             general.covenant_data = "No Covenant Data"
+            general.covenant_names = ""
+            general.covenant_combined_image = b""
+            general.covenant_attributes_image = self.exporter.load_covenant_attributes_image()
             general.confidence_scores['covenant'] = 0.0
             return
 
@@ -408,6 +445,7 @@ class ApplicationController:
             if not new_screenshot:
                 logger.warning(f"Failed to capture screenshot for covenant general {i+1}")
                 covenant_parts.append("Unknown Covenant")
+                covenant_names.append("Unknown Covenant")
                 total_confidence += 0.0
                 continue
 
@@ -416,16 +454,32 @@ class ApplicationController:
             name_result = self.ocr_engine.extract_text(new_screenshot, "GeneralsListCovenantCoGenName")
 
             if image_data and name_result and name_result.text:
-                covenant_parts.append(f"{image_data.decode('latin-1')} {name_result.text}")
+                # Resize covenant image to 70%
+                from PIL import Image
+                import io
+                img = Image.open(io.BytesIO(image_data))
+                new_size = (int(img.width * 0.7), int(img.height * 0.7))
+                img_resized = img.resize(new_size, Image.LANCZOS)
+                buf = io.BytesIO()
+                img_resized.save(buf, format='PNG')
+                image_data = buf.getvalue()
+                
+                covenant_parts.append(name_result.text.strip())
+                covenant_names.append(name_result.text.strip())
+                covenant_images.append(image_data)
                 total_confidence += name_result.confidence
             else:
                 covenant_parts.append("Unknown Covenant")
+                covenant_names.append("Unknown Covenant")
                 total_confidence += 0.0
 
         # Close covenant sub-screen
         self.navigator.close_covenant_subscreen()
 
         general.covenant_data = chr(10).join(covenant_parts)
+        general.covenant_names = chr(1).join(covenant_names)
+        general.covenant_combined_image = self.exporter.combine_images_side_by_side(covenant_images)
+        general.covenant_attributes_image = self.exporter.load_covenant_attributes_image()
         general.confidence_scores['covenant'] = total_confidence / 3
 
     def export_to_excel(self, file_path: str, generals: List[General], incremental: bool = False) -> bool:

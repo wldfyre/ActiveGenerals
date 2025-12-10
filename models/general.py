@@ -22,8 +22,14 @@ class General:
 
     # Concatenated data from subscreens (stored as CRLF-separated strings)
     cultivation_data: str = ""  # "Leadership: 85+15\nAttack: 92+1\nDefense: 78+7\nPolitics: 81-3"
-    specialty_data: str = ""    # "'Specialty1 Icon'+' '+'Specialty1 Name'\n'Specialty2 Icon'+' '+'Specialty2 Name'\n..."
     covenant_data: str = ""     # "'Covenant1 Icon'+' '+'Covenant1 Name'\n'Covenant2 Icon'+' '+'Covenant2 Name'\n..."
+
+    # Combined data for Excel export
+    specialty_names: str = ""   # Combined specialty names with \n separator
+    specialty_combined_image: bytes = b""  # Combined specialty images side by side
+    covenant_names: str = ""    # Combined covenant names with \x01 separator
+    covenant_combined_image: bytes = b""   # Combined covenant images side by side
+    covenant_attributes_image: bytes = b"" # GeneralsListCovenantAttributes.png image
 
     # Metadata
     confidence_scores: Optional[Dict[str, float]] = None

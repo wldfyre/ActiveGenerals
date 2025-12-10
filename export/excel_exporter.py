@@ -12,6 +12,7 @@ from openpyxl.drawing.xdr import XDRPoint2D, XDRPositiveSize2D
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 from io import BytesIO
+from PIL import Image as PILImage
 
 from models.general import General
 
@@ -31,7 +32,7 @@ class ExcelExporter:
             
             # Debug: Log general data
             for i, gen in enumerate(generals):
-                logger.debug(f"General {i+1}: name='{gen.name}', level={gen.level}, power={gen.power}, has_cultivation={bool(gen.cultivation_data)}, has_specialty={bool(gen.specialty_data)}, has_covenant={bool(gen.covenant_data)}")
+                logger.debug(f"General {i+1}: name='{gen.name}', level={gen.level}, power={gen.power}, has_cultivation={bool(gen.cultivation_data)}, has_specialty={bool(gen.specialty_names)}, has_covenant={bool(gen.covenant_data)}")
 
             # For incremental exports, load existing file if it exists
             if incremental and Path(file_path).exists():
@@ -77,6 +78,174 @@ class ExcelExporter:
             logger.error(f"Excel export failed: {e}")
             return False
 
+    def append_general(self, general: General, file_path: str, row_index: int) -> bool:
+        """Append a single general to an existing Excel file"""
+        try:
+            logger.info(f"Appending general '{general.name}' to row {row_index} in {file_path}")
+            
+            # Load existing workbook
+            if not Path(file_path).exists():
+                logger.error(f"Excel file does not exist: {file_path}")
+                return False
+                
+            workbook = openpyxl.load_workbook(file_path)
+            worksheet = workbook.active
+            
+            if not worksheet:
+                logger.error("No active worksheet found")
+                return False
+
+            # Populate single general data
+            self.populate_single_general(worksheet, general, row_index)
+
+            # Insert single general images
+            self.insert_single_general_images(worksheet, general, row_index)
+
+            # Set row height to 1 inch (72 points) with content adjustment
+            max_height = 72  # Default height: 1 inch (72 points)
+            for col in range(1, 16):
+                cell_value = worksheet.cell(row=row_index, column=col).value
+                if cell_value:
+                    # Estimate height based on text length (rough approximation)
+                    text_length = len(str(cell_value))
+                    # For multi-line content (like specialty data), estimate lines
+                    if '\n' in str(cell_value):
+                        lines = str(cell_value).count('\n') + 1
+                        estimated_height = lines * 15  # 15 points per line
+                    else:
+                        # Single line, but wrap if very long
+                        estimated_height = min(text_length // 50 + 1, 5) * 15
+                    max_height = max(max_height, estimated_height)
+            worksheet.row_dimensions[row_index].height = max_height
+
+            # Save file
+            workbook.save(file_path)
+            logger.info(f"Successfully appended general to {file_path}")
+
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to append general: {e}")
+            return False
+
+    def populate_single_general(self, worksheet: Any, general: General, row: int) -> None:
+        """Populate a single general's data in worksheet"""
+        try:
+            logger.debug(f"Populating row {row} with general: name={general.name}, level={general.level}, power={general.power}")
+            logger.debug(f"  exp_ratio={general.exp_ratio}, cultivation={general.cultivation_data[:50] if general.cultivation_data else 'None'}")
+            logger.debug(f"  specialty={general.specialty_names[:50] if general.specialty_names else 'None'}")
+            logger.debug(f"  covenant={general.covenant_data[:50] if general.covenant_data else 'None'}")
+            
+            worksheet.cell(row=row, column=1, value=general.name or "")
+            worksheet.cell(row=row, column=2, value=general.level)
+            worksheet.cell(row=row, column=3, value=general.type or "")
+            worksheet.cell(row=row, column=4, value=general.power)
+            # Stars column (5) will have image
+            worksheet.cell(row=row, column=6, value=general.exp_ratio or "")
+            
+            # Split cultivation data into separate columns
+            if general.cultivation_data:
+                cultivation_parts = general.cultivation_data.split('\n')
+                worksheet.cell(row=row, column=7, value=cultivation_parts[0] if len(cultivation_parts) > 0 else "")  # Leadership
+                worksheet.cell(row=row, column=8, value=cultivation_parts[1] if len(cultivation_parts) > 1 else "")  # Attack
+                worksheet.cell(row=row, column=9, value=cultivation_parts[2] if len(cultivation_parts) > 2 else "")  # Defense
+                worksheet.cell(row=row, column=10, value=cultivation_parts[3] if len(cultivation_parts) > 3 else "") # Politics
+            else:
+                worksheet.cell(row=row, column=7, value="")
+                worksheet.cell(row=row, column=8, value="")
+                worksheet.cell(row=row, column=9, value="")
+                worksheet.cell(row=row, column=10, value="")
+            
+            # Specialties - use combined names
+            if general.specialty_names:
+                worksheet.cell(row=row, column=11, value=general.specialty_names)
+            else:
+                worksheet.cell(row=row, column=11, value="")
+            
+            # Covenant - use combined names
+            if general.covenant_names:
+                worksheet.cell(row=row, column=13, value=general.covenant_names)
+            else:
+                worksheet.cell(row=row, column=13, value="")
+            
+            worksheet.cell(row=row, column=15, value="Yes" if general.is_uncertain else "No")
+
+            logger.debug(f"Populated single general data in row {row}")
+        except Exception as e:
+            logger.error(f"Failed to populate single general data: {e}")
+
+    def insert_single_general_images(self, worksheet: Any, general: General, row: int) -> None:
+        """Insert images for a single general"""
+        try:
+            # Add stars image
+            if general.stars_image and len(general.stars_image) > 0:
+                try:
+                    # Create image from bytes
+                    image_stream = BytesIO(general.stars_image)
+                    img = XLImage(image_stream)
+
+                    # Add image to worksheet
+                    worksheet.add_image(img, f'E{row}')
+
+                except Exception as img_error:
+                    logger.warning(f"Failed to insert stars image for general {general.name}: {img_error}")
+
+            # Add type image
+            if general.type_image and len(general.type_image) > 0:
+                try:
+                    # Create image from bytes
+                    image_stream = BytesIO(general.type_image)
+                    img = XLImage(image_stream)
+
+                    # Add image to worksheet, centered in cell
+                    worksheet.add_image(img, f'C{row}')
+
+                except Exception as img_error:
+                    logger.warning(f"Failed to insert type image for general {general.name}: {img_error}")
+
+            # Add specialty combined image in column L
+            if general.specialty_combined_image and len(general.specialty_combined_image) > 0:
+                try:
+                    # Create image from bytes
+                    image_stream = BytesIO(general.specialty_combined_image)
+                    img = XLImage(image_stream)
+
+                    # Add image to worksheet, centered in cell
+                    worksheet.add_image(img, f'L{row}')
+
+                except Exception as img_error:
+                    logger.warning(f"Failed to insert specialty combined image for general {general.name}: {img_error}")
+
+            # Add covenant combined image in column N
+            if general.covenant_combined_image and len(general.covenant_combined_image) > 0:
+                try:
+                    # Create image from bytes
+                    image_stream = BytesIO(general.covenant_combined_image)
+                    img = XLImage(image_stream)
+
+                    # Add image to worksheet, centered in cell
+                    worksheet.add_image(img, f'N{row}')
+
+                except Exception as img_error:
+                    logger.warning(f"Failed to insert covenant combined image for general {general.name}: {img_error}")
+
+            # Add covenant attributes image in column O
+            if general.covenant_attributes_image and len(general.covenant_attributes_image) > 0:
+                try:
+                    # Create image from bytes
+                    image_stream = BytesIO(general.covenant_attributes_image)
+                    img = XLImage(image_stream)
+
+                    # Add image to worksheet, centered in cell
+                    worksheet.add_image(img, f'O{row}')
+
+                except Exception as img_error:
+                    logger.warning(f"Failed to insert covenant attributes image for general {general.name}: {img_error}")
+
+            logger.debug(f"Inserted images for single general in row {row}")
+        except Exception as e:
+            logger.error(f"Failed to insert single general images: {e}")
+
     def create_workbook(self, template_path: Optional[str] = None) -> Optional[Any]:
         """Create or load Excel workbook"""
         try:
@@ -90,7 +259,8 @@ class ExcelExporter:
                 worksheet = workbook.active
                 headers = [
                     "Name", "Level", "Type", "Power", "Stars", "Experience Ratio",
-                    "Cultivation", "Specialty", "Covenant", "Uncertain"
+                    "Leadership", "Attack", "Defense", "Politics", "Specialties", "Specialty Images",
+                    "Covenants", "Covenant Images", "Covenant Attributes", "Uncertain"
                 ]
                 for col, header in enumerate(headers, 1):
                     worksheet.cell(row=1, column=col, value=header)
@@ -99,24 +269,94 @@ class ExcelExporter:
             logger.error(f"Failed to create workbook: {e}")
             return None
 
+    def combine_images_side_by_side(self, image_bytes_list: List[bytes]) -> bytes:
+        """Combine multiple images side by side into a single image"""
+        if not image_bytes_list:
+            return b""
+        
+        if len(image_bytes_list) == 1:
+            return image_bytes_list[0]
+        
+        try:
+            # Open all images
+            images = []
+            for img_bytes in image_bytes_list:
+                if img_bytes:
+                    img_stream = BytesIO(img_bytes)
+                    img = PILImage.open(img_stream)
+                    images.append(img)
+            
+            if not images:
+                return b""
+            
+            # Find the maximum height
+            max_height = max(img.height for img in images)
+            
+            # Resize all images to the same height while maintaining aspect ratio
+            resized_images = []
+            for img in images:
+                if img.height != max_height:
+                    # Calculate new width to maintain aspect ratio
+                    aspect_ratio = img.width / img.height
+                    new_width = int(max_height * aspect_ratio)
+                    resized_img = img.resize((new_width, max_height), PILImage.Resampling.LANCZOS)
+                    resized_images.append(resized_img)
+                else:
+                    resized_images.append(img)
+            
+            # Calculate total width
+            total_width = sum(img.width for img in resized_images)
+            
+            # Create new image with combined width
+            combined_image = PILImage.new('RGBA', (total_width, max_height))
+            
+            # Paste images side by side
+            current_x = 0
+            for img in resized_images:
+                combined_image.paste(img, (current_x, 0))
+                current_x += img.width
+            
+            # Convert back to bytes
+            output_stream = BytesIO()
+            combined_image.save(output_stream, format='PNG')
+            return output_stream.getvalue()
+            
+        except Exception as e:
+            logger.error(f"Failed to combine images: {e}")
+            return b""
+
+    def load_covenant_attributes_image(self) -> bytes:
+        """Load the GeneralsListCovenantAttributes.png image"""
+        try:
+            attributes_path = Path(self.config.get('resources_path', 'Resources')) / "GeneralsListCovenantAttributes.png"
+            if attributes_path.exists():
+                with open(attributes_path, 'rb') as f:
+                    return f.read()
+            else:
+                logger.warning(f"Covenant attributes image not found: {attributes_path}")
+                return b""
+        except Exception as e:
+            logger.error(f"Failed to load covenant attributes image: {e}")
+            return b""
+
     def clear_data_rows(self, worksheet: Any) -> None:
         """Clear existing data rows in workbook"""
         try:
-            # Clear from row 6 onwards (keep headers in rows 1-5)
-            for row in range(6, worksheet.max_row + 1):
+            # Clear from row 7 onwards (keep headers in rows 1-6)
+            for row in range(7, worksheet.max_row + 1):
                 for col in range(1, worksheet.max_column + 1):
                     worksheet.cell(row=row, column=col).value = None
-            logger.info(f"Cleared data rows from 6 to {worksheet.max_row}")
+            logger.info(f"Cleared data rows from 7 to {worksheet.max_row}")
         except Exception as e:
             logger.error(f"Failed to clear data rows: {e}")
 
     def populate_data(self, worksheet: Any, generals: List[General]) -> None:
         """Populate worksheet with general data"""
         try:
-            for row, general in enumerate(generals, 6):  # Start from row 6
+            for row, general in enumerate(generals, 7):  # Start from row 7
                 logger.debug(f"Populating row {row} with general: name={general.name}, level={general.level}, power={general.power}")
                 logger.debug(f"  exp_ratio={general.exp_ratio}, cultivation={general.cultivation_data[:50] if general.cultivation_data else 'None'}")
-                logger.debug(f"  specialty={general.specialty_data[:50] if general.specialty_data else 'None'}")
+                logger.debug(f"  specialty={general.specialty_names[:50] if general.specialty_names else 'None'}")
                 logger.debug(f"  covenant={general.covenant_data[:50] if general.covenant_data else 'None'}")
                 
                 worksheet.cell(row=row, column=1, value=general.name or "")
@@ -125,10 +365,33 @@ class ExcelExporter:
                 worksheet.cell(row=row, column=4, value=general.power)
                 # Stars column (5) will have image
                 worksheet.cell(row=row, column=6, value=general.exp_ratio or "")
-                worksheet.cell(row=row, column=7, value=general.cultivation_data or "")
-                worksheet.cell(row=row, column=8, value=general.specialty_data or "")
-                worksheet.cell(row=row, column=9, value=general.covenant_data or "")
-                worksheet.cell(row=row, column=10, value="Yes" if general.is_uncertain else "No")
+                
+                # Split cultivation data into separate columns
+                if general.cultivation_data:
+                    cultivation_parts = general.cultivation_data.split('\n')
+                    worksheet.cell(row=row, column=7, value=cultivation_parts[0] if len(cultivation_parts) > 0 else "")  # Leadership
+                    worksheet.cell(row=row, column=8, value=cultivation_parts[1] if len(cultivation_parts) > 1 else "")  # Attack
+                    worksheet.cell(row=row, column=9, value=cultivation_parts[2] if len(cultivation_parts) > 2 else "")  # Defense
+                    worksheet.cell(row=row, column=10, value=cultivation_parts[3] if len(cultivation_parts) > 3 else "") # Politics
+                else:
+                    worksheet.cell(row=row, column=7, value="")
+                    worksheet.cell(row=row, column=8, value="")
+                    worksheet.cell(row=row, column=9, value="")
+                    worksheet.cell(row=row, column=10, value="")
+                
+                # Specialties - use combined names
+                if general.specialty_names:
+                    worksheet.cell(row=row, column=11, value=general.specialty_names)
+                else:
+                    worksheet.cell(row=row, column=11, value="")
+                
+                # Covenant - use combined names
+                if general.covenant_names:
+                    worksheet.cell(row=row, column=13, value=general.covenant_names)
+                else:
+                    worksheet.cell(row=row, column=13, value="")
+                
+                worksheet.cell(row=row, column=15, value="Yes" if general.is_uncertain else "No")
 
             logger.info(f"Populated data for {len(generals)} generals")
         except Exception as e:
@@ -142,7 +405,6 @@ class ExcelExporter:
             header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
             header_alignment = Alignment(horizontal="center", vertical="center")
 
-            data_alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
             border = Border(
                 left=Side(style='thin'),
                 right=Side(style='thin'),
@@ -150,43 +412,47 @@ class ExcelExporter:
                 bottom=Side(style='thin')
             )
 
-            # Format headers
-            for col in range(1, 11):
+            # Format headers (now 15 columns)
+            for col in range(1, 16):
                 cell = worksheet.cell(row=1, column=col)
                 cell.font = header_font
                 cell.fill = header_fill
                 cell.alignment = header_alignment
                 cell.border = border
 
-            # Format data cells
-            for row in range(6, num_generals + 6):
-                for col in range(1, 11):
+            # Format data cells (start from row 7, 15 columns)
+            for row in range(7, num_generals + 7):
+                for col in range(1, 16):
                     cell = worksheet.cell(row=row, column=col)
-                    cell.alignment = data_alignment
+                    # Columns K (11) and N (14) have word wrap enabled
+                    if col in [11, 14]:
+                        cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
+                    else:
+                        cell.alignment = Alignment(horizontal="left", vertical="top")
                     cell.border = border
 
             # Apply number formatting to power column (column 4)
             from openpyxl.styles import NamedStyle
             number_style = NamedStyle(name='number_with_commas', number_format='#,##0')
-            for row in range(6, num_generals + 6):
+            for row in range(7, num_generals + 7):
                 cell = worksheet.cell(row=row, column=4)
                 cell.style = number_style
 
-            # Auto-adjust column widths
-            for col in range(1, 11):
+            # Auto-adjust column widths (15 columns)
+            for col in range(1, 16):
                 column_letter = get_column_letter(col)
                 max_length = 0
-                for row in range(1, num_generals + 6):
+                for row in range(1, num_generals + 7):
                     cell_value = worksheet.cell(row=row, column=col).value
                     if cell_value:
                         max_length = max(max_length, len(str(cell_value)))
                 adjusted_width = min(max_length + 2, 50)  # Cap at 50
                 worksheet.column_dimensions[column_letter].width = adjusted_width
 
-            # Auto-adjust row heights based on content
-            for row in range(1, num_generals + 6):
-                max_height = 15  # Default height
-                for col in range(1, 11):
+            # Auto-adjust row heights based on content (data rows only, preserve template header heights)
+            for row in range(7, num_generals + 7):
+                max_height = 72  # Default height: 1 inch (72 points)
+                for col in range(1, 16):
                     cell_value = worksheet.cell(row=row, column=col).value
                     if cell_value:
                         # Estimate height based on text length (rough approximation)
@@ -201,8 +467,12 @@ class ExcelExporter:
                         max_height = max(max_height, estimated_height)
                 worksheet.row_dimensions[row].height = max_height
 
-            # Special width for stars column (images)
-            worksheet.column_dimensions['E'].width = 15
+            # Special widths for image columns
+            worksheet.column_dimensions['C'].width = 15  # Type images
+            worksheet.column_dimensions['E'].width = 20  # Stars images (fits ~140px wide images)
+            worksheet.column_dimensions['L'].width = 20  # Specialty images
+            worksheet.column_dimensions['N'].width = 20  # Covenant images
+            worksheet.column_dimensions['O'].width = 20  # Covenant attributes image
 
             logger.info("Applied cell formatting")
         except Exception as e:
@@ -211,28 +481,19 @@ class ExcelExporter:
     def insert_images(self, worksheet: Any, generals: List[General]) -> None:
         """Insert images into worksheet"""
         try:
-            for row, general in enumerate(generals, 6):  # Start from row 6
+            for row, general in enumerate(generals, 7):  # Start from row 7
                 if general.stars_image and len(general.stars_image) > 0:
                     try:
+                        logger.debug(f"Inserting stars image for {general.name}: {len(general.stars_image)} bytes")
                         # Create image from bytes
                         image_stream = BytesIO(general.stars_image)
                         img = XLImage(image_stream)
 
-                        # Resize image to fit cell
-                        img.width = 60
-                        img.height = 20
-
                         # Add image to worksheet
                         worksheet.add_image(img, f'E{row}')
 
-                        # Center the image horizontally in the cell
-                        if hasattr(img.anchor, 'pos'):
-                            # Approximate center position: 22 pixels from left edge
-                            img.anchor.pos.x = 22 * 9525  # 22 pixels * 9525 EMU per pixel
-                            img.anchor.pos.y = 0  # Keep at top
-
                     except Exception as img_error:
-                        logger.warning(f"Failed to insert image for general {general.name}: {img_error}")
+                        logger.warning(f"Failed to insert stars image for general {general.name}: {img_error}")
 
                 # Add type image if available
                 if general.type_image and len(general.type_image) > 0:
@@ -241,14 +502,50 @@ class ExcelExporter:
                         image_stream = BytesIO(general.type_image)
                         img = XLImage(image_stream)
 
-                        # Keep original dimensions - do not resize
-                        # Image will be centered in the cell by default
-
                         # Add image to worksheet, centered in cell
                         worksheet.add_image(img, f'C{row}')
 
                     except Exception as img_error:
                         logger.warning(f"Failed to insert type image for general {general.name}: {img_error}")
+
+                # Add specialty combined image in column L
+                if general.specialty_combined_image and len(general.specialty_combined_image) > 0:
+                    try:
+                        # Create image from bytes
+                        image_stream = BytesIO(general.specialty_combined_image)
+                        img = XLImage(image_stream)
+
+                        # Add image to worksheet, centered in cell
+                        worksheet.add_image(img, f'L{row}')
+
+                    except Exception as img_error:
+                        logger.warning(f"Failed to insert specialty combined image for general {general.name}: {img_error}")
+
+                # Add covenant combined image in column N
+                if general.covenant_combined_image and len(general.covenant_combined_image) > 0:
+                    try:
+                        # Create image from bytes
+                        image_stream = BytesIO(general.covenant_combined_image)
+                        img = XLImage(image_stream)
+
+                        # Add image to worksheet, centered in cell
+                        worksheet.add_image(img, f'N{row}')
+
+                    except Exception as img_error:
+                        logger.warning(f"Failed to insert covenant combined image for general {general.name}: {img_error}")
+
+                # Add covenant attributes image in column O
+                if general.covenant_attributes_image and len(general.covenant_attributes_image) > 0:
+                    try:
+                        # Create image from bytes
+                        image_stream = BytesIO(general.covenant_attributes_image)
+                        img = XLImage(image_stream)
+
+                        # Add image to worksheet, centered in cell
+                        worksheet.add_image(img, f'O{row}')
+
+                    except Exception as img_error:
+                        logger.warning(f"Failed to insert covenant attributes image for general {general.name}: {img_error}")
 
             logger.info(f"Inserted images for {len(generals)} generals")
         except Exception as e:

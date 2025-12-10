@@ -327,18 +327,11 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Not Connected", "Please connect to a platform first.")
             return
 
-        # Generate incremental export path
-        import datetime
-        default_path = self.config_manager.get('default_export_path', '~/Documents/Evony')
-        expanded_path = os.path.expanduser(default_path)
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        incremental_export_path = os.path.join(expanded_path, f"EvonyActiveGenerals_Incremental_{timestamp}.xlsx")
-
-        # Ensure directory exists
-        os.makedirs(expanded_path, exist_ok=True)
-
-        # Store the incremental path for later use
-        self.incremental_export_path = incremental_export_path
+        # Clear existing data and reset UI
+        self.generals_data = []
+        self._update_generals_table()
+        self.ui.export_btn.setEnabled(False)
+        self.ui.status_label.setText("Starting Collection...")
 
         # Disable controls
         self.ui.start_collect_btn.setEnabled(False)
@@ -346,14 +339,14 @@ class MainWindow(QMainWindow):
         self.ui.connect_btn.setEnabled(False)
         self.ui.progress_bar.setVisible(True)
 
-        # Start collection in background thread
-        self.collection_thread = CollectionWorker(self.controller, incremental_export_path)
+        # Start collection in background thread (no export path needed)
+        self.collection_thread = CollectionWorker(self.controller, None)
         self.collection_thread.progress_updated.connect(self._on_progress_updated)
         self.collection_thread.collection_finished.connect(self._on_collection_finished)
         self.collection_thread.error_occurred.connect(self._on_collection_error)
         self.collection_thread.start()
 
-        self._log_message(f"Starting data collection with incremental export to {incremental_export_path}...")
+        self._log_message("Starting data collection with automatic Excel export to ./Spreadsheets directory...")
 
     def _on_stop_collection_clicked(self):
         """Handle stop collection button"""
@@ -436,9 +429,9 @@ class MainWindow(QMainWindow):
         self._log_message(f"Failed to connect to platform: {error_msg}")
         QMessageBox.warning(self, "Connection Failed", f"Failed to connect to platform: {error_msg}")
 
-    def _on_collection_finished(self, generals: List[General]):
+    def _on_collection_finished(self, generals: List[General], excel_path: str = None):
         """Handle collection completion"""
-        logger.info(f"Collection finished with {len(generals)} generals")
+        logger.info(f"Collection finished with {len(generals)} generals, Excel file: {excel_path}")
         self.generals_data = generals
 
         # Re-enable controls
@@ -454,20 +447,18 @@ class MainWindow(QMainWindow):
 
         self._log_message(f"Collection completed. Found {len(generals)} generals.")
 
-        # Offer to save the incremental export file
-        if hasattr(self, 'incremental_export_path') and os.path.exists(self.incremental_export_path):
+        # Handle Excel file
+        if excel_path and os.path.exists(excel_path):
+            self._log_message(f"Excel file created: {excel_path}")
+            
             reply = QMessageBox.question(
-                self, "Save Results",
-                f"Collection complete! Data has been saved to:\n{self.incremental_export_path}\n\nWould you like to save this file to a different location?",
+                self, "Collection Complete",
+                f"Collection complete! Data has been saved to:\n{excel_path}\n\nWould you like to open this file now?",
                 QMessageBox.Yes | QMessageBox.No
             )
 
             if reply == QMessageBox.Yes:
-                self._save_incremental_file()
-            else:
-                # Auto-open the incremental file
-                if self.ui.auto_open_check.isChecked():
-                    os.startfile(self.incremental_export_path)
+                os.startfile(excel_path)
         else:
             QMessageBox.information(
                 self, "Collection Complete",
@@ -485,23 +476,12 @@ class MainWindow(QMainWindow):
         # Check if collection was stopped by user
         if "stopped by user" in error_msg.lower():
             self.ui.status_label.setText("Collection Stopped")
-            self._log_message(f"Collection stopped by user. Data collected so far is available.")
+            self._log_message("Collection stopped by user. Data collected so far is available in the table.")
 
-            # Inform user about available data
-            if hasattr(self, 'incremental_export_path') and os.path.exists(self.incremental_export_path):
-                reply = QMessageBox.question(
-                    self, "Collection Stopped",
-                    f"Collection was stopped by user.\n\nData collected so far has been saved to:\n{self.incremental_export_path}\n\nWould you like to open this file now?",
-                    QMessageBox.Yes | QMessageBox.No
-                )
-
-                if reply == QMessageBox.Yes:
-                    os.startfile(self.incremental_export_path)
-            else:
-                QMessageBox.information(
-                    self, "Collection Stopped",
-                    "Collection was stopped by user. Data collected so far is available in the table."
-                )
+            QMessageBox.information(
+                self, "Collection Stopped",
+                "Collection was stopped by user. Data collected so far is available in the table."
+            )
         else:
             self.ui.status_label.setText("Collection Failed")
             self._log_message(f"Collection error: {error_msg}")
@@ -693,13 +673,13 @@ class CollectionWorker(QThread):
     """Worker thread for data collection"""
 
     progress_updated = pyqtSignal(dict)
-    collection_finished = pyqtSignal(list)
+    collection_finished = pyqtSignal(list, str)  # generals list and excel file path
     error_occurred = pyqtSignal(str)
 
     def __init__(self, controller: ApplicationController, export_path: str = None):
         super().__init__()
         self.controller = controller
-        self.export_path = export_path
+        self.export_path = export_path  # Kept for compatibility but not used
         self._stop_flag = False
 
     def run(self):
@@ -710,8 +690,8 @@ class CollectionWorker(QThread):
                     raise KeyboardInterrupt("Collection stopped by user")
                 self.progress_updated.emit(progress_info)
 
-            generals = self.controller.collect_all_generals(progress_callback, self.export_path)
-            self.collection_finished.emit(generals)
+            generals, excel_path = self.controller.collect_all_generals(progress_callback, self.export_path)
+            self.collection_finished.emit(generals, excel_path)
 
         except KeyboardInterrupt:
             self.error_occurred.emit("Collection stopped by user")
