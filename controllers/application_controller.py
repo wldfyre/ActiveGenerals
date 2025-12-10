@@ -331,6 +331,16 @@ class ApplicationController:
 
         # Extract stars image
         stars_image = self.ocr_engine.extract_image(screenshot, "GeneralsListStars")
+        if stars_image:
+            # Resize stars image to 50%
+            from PIL import Image
+            import io
+            img = Image.open(io.BytesIO(stars_image))
+            new_size = (int(img.width * 0.5), int(img.height * 0.5))
+            img_resized = img.resize(new_size, Image.LANCZOS)
+            buf = io.BytesIO()
+            img_resized.save(buf, format='PNG')
+            stars_image = buf.getvalue()
         general.stars_image = stars_image or b""
         logger.debug(f"Extracted stars image for {general.name}: {len(general.stars_image)} bytes")
 
@@ -411,7 +421,18 @@ class ApplicationController:
                 total_confidence += 0.0
 
         general.specialty_names = chr(10).join(specialty_names)
-        general.specialty_combined_image = self.exporter.combine_images_side_by_side(specialty_images)
+        combined_image = self.exporter.combine_images_side_by_side(specialty_images)
+        if combined_image:
+            # Resize combined specialty image to 50%
+            from PIL import Image
+            import io
+            img = Image.open(io.BytesIO(combined_image))
+            new_size = (int(img.width * 0.5), int(img.height * 0.5))
+            img_resized = img.resize(new_size, Image.LANCZOS)
+            buf = io.BytesIO()
+            img_resized.save(buf, format='PNG')
+            combined_image = buf.getvalue()
+        general.specialty_combined_image = combined_image
         general.confidence_scores['specialty'] = total_confidence / 5
 
     def _extract_covenant_data(self, general: General, screenshot) -> None:
@@ -454,11 +475,11 @@ class ApplicationController:
             name_result = self.ocr_engine.extract_text(new_screenshot, "GeneralsListCovenantCoGenName")
 
             if image_data and name_result and name_result.text:
-                # Resize covenant image to 70%
+                # Resize covenant image to 50%
                 from PIL import Image
                 import io
                 img = Image.open(io.BytesIO(image_data))
-                new_size = (int(img.width * 0.7), int(img.height * 0.7))
+                new_size = (int(img.width * 0.5), int(img.height * 0.5))
                 img_resized = img.resize(new_size, Image.LANCZOS)
                 buf = io.BytesIO()
                 img_resized.save(buf, format='PNG')
@@ -478,7 +499,18 @@ class ApplicationController:
 
         general.covenant_data = chr(10).join(covenant_parts)
         general.covenant_names = chr(1).join(covenant_names)
-        general.covenant_combined_image = self.exporter.combine_images_side_by_side(covenant_images)
+        combined_image = self.exporter.combine_images_side_by_side(covenant_images)
+        if combined_image:
+            # Resize combined covenant image to 50%
+            from PIL import Image
+            import io
+            img = Image.open(io.BytesIO(combined_image))
+            new_size = (int(img.width * 0.5), int(img.height * 0.5))
+            img_resized = img.resize(new_size, Image.LANCZOS)
+            buf = io.BytesIO()
+            img_resized.save(buf, format='PNG')
+            combined_image = buf.getvalue()
+        general.covenant_combined_image = combined_image
         general.covenant_attributes_image = self.exporter.load_covenant_attributes_image()
         general.confidence_scores['covenant'] = total_confidence / 3
 

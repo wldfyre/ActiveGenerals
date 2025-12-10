@@ -1,28 +1,268 @@
-2025-12-09 21:15:31,115 - __main__ - INFO - Starting Evony Active Generals Tracker
-2025-12-09 21:15:31,340 - ui.main_window - DEBUG - Deleted debug image: GeneralsListFavorites_reference.png
-2025-12-09 21:15:31,340 - ui.main_window - DEBUG - Deleted debug image: GeneralsListFavorites_region.png
-2025-12-09 21:15:31,340 - ui.main_window - DEBUG - Deleted debug image: GeneralsListIdle_reference.png
-2025-12-09 21:15:31,341 - ui.main_window - DEBUG - Deleted debug image: GeneralsListIdle_region.png
-2025-12-09 21:15:31,341 - ui.main_window - DEBUG - Deleted debug image: GeneralsListMode_reference.png
-2025-12-09 21:15:31,341 - ui.main_window - DEBUG - Deleted debug image: GeneralsListMode_region.png
-2025-12-09 21:15:31,341 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCount.png
-2025-12-09 21:15:31,342 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCount_postprocessed.png
-2025-12-09 21:15:31,342 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivateDefense.png
-2025-12-09 21:15:31,342 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivateDefense_postprocessed.png
-2025-12-09 21:15:31,343 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivateLeadership.png
-2025-12-09 21:15:31,343 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivateLeadership_postprocessed.png
-2025-12-09 21:15:31,343 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivatePolitics.png
-2025-12-09 21:15:31,343 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivatePolitics_postprocessed.png
-2025-12-09 21:15:31,344 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListExp2.png
-2025-12-09 21:15:31,344 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListExp2_postprocessed.png
-2025-12-09 21:15:31,344 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListName.png
-2025-12-09 21:15:31,345 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListName_postprocessed.png
-2025-12-09 21:15:31,345 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListPower2.png
-2025-12-09 21:15:31,345 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListPower2_postprocessed.png
-2025-12-09 21:15:31,345 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListSpecialtyName.png
-2025-12-09 21:15:31,346 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListSpecialtyName_postprocessed.png
-2025-12-09 21:15:31,346 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListStars.png
-2025-12-09 21:15:31,346 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListType.png
-2025-12-09 21:15:31,346 - ui.main_window - INFO - Cleaned up debug images from previous session
-2025-12-09 21:15:31,347 - config.config_manager - INFO - Configuration saved to c:\PythonProjects\EvonyTools\ActiveGenerals\config.json
-2025-12-09 21:15:31,347 - ui.main_window - INFO - Main window initialized
+2025-12-10 01:46:23,974 - __main__ - INFO - Starting Evony Active Generals Tracker
+2025-12-10 01:46:24,149 - ui.main_window - DEBUG - Deleted debug image: GeneralsListCovenant_reference.png
+2025-12-10 01:46:24,149 - ui.main_window - DEBUG - Deleted debug image: GeneralsListCovenant_region.png
+2025-12-10 01:46:24,150 - ui.main_window - DEBUG - Deleted debug image: GeneralsListFavorites_reference.png
+2025-12-10 01:46:24,150 - ui.main_window - DEBUG - Deleted debug image: GeneralsListFavorites_region.png
+2025-12-10 01:46:24,150 - ui.main_window - DEBUG - Deleted debug image: GeneralsListIdle_reference.png
+2025-12-10 01:46:24,150 - ui.main_window - DEBUG - Deleted debug image: GeneralsListIdle_region.png
+2025-12-10 01:46:24,151 - ui.main_window - DEBUG - Deleted debug image: GeneralsListMode_reference.png
+2025-12-10 01:46:24,151 - ui.main_window - DEBUG - Deleted debug image: GeneralsListMode_region.png
+2025-12-10 01:46:24,151 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCount.png
+2025-12-10 01:46:24,152 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCount_postprocessed.png
+2025-12-10 01:46:24,152 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivateDefense.png
+2025-12-10 01:46:24,152 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivateDefense_postprocessed.png
+2025-12-10 01:46:24,152 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivateLeadership.png
+2025-12-10 01:46:24,153 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivateLeadership_postprocessed.png
+2025-12-10 01:46:24,153 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivatePolitics.png
+2025-12-10 01:46:24,153 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListCultivatePolitics_postprocessed.png
+2025-12-10 01:46:24,153 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListExp2.png
+2025-12-10 01:46:24,154 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListExp2_postprocessed.png
+2025-12-10 01:46:24,154 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListName.png
+2025-12-10 01:46:24,154 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListName_postprocessed.png
+2025-12-10 01:46:24,154 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListPower2.png
+2025-12-10 01:46:24,155 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListPower2_postprocessed.png
+2025-12-10 01:46:24,155 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListPowerLocation.png
+2025-12-10 01:46:24,155 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListSpecialty1.png
+2025-12-10 01:46:24,156 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListSpecialty2.png
+2025-12-10 01:46:24,156 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListSpecialty3.png
+2025-12-10 01:46:24,156 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListSpecialty4.png
+2025-12-10 01:46:24,156 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListSpecialty5.png
+2025-12-10 01:46:24,156 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListSpecialtyName.png
+2025-12-10 01:46:24,156 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListSpecialtyName_postprocessed.png
+2025-12-10 01:46:24,156 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListStars.png
+2025-12-10 01:46:24,157 - ui.main_window - DEBUG - Deleted debug image: ocr_GeneralsListType.png
+2025-12-10 01:46:24,157 - ui.main_window - INFO - Cleaned up debug images from previous session
+2025-12-10 01:46:24,159 - config.config_manager - INFO - Configuration saved to c:\PythonProjects\EvonyTools\ActiveGenerals\config.json
+2025-12-10 01:46:24,159 - ui.main_window - INFO - Main window initialized
+2025-12-10 01:46:28,360 - config.config_manager - INFO - Configuration saved to c:\PythonProjects\EvonyTools\ActiveGenerals\config.json
+2025-12-10 01:46:28,385 - platform_adb.bluestacks_interface - DEBUG - ADB command result: List of devices attached
+emulator-5554	device
+2025-12-10 01:46:28,407 - platform_adb.bluestacks_interface - DEBUG - ADB command result: List of devices attached
+emulator-5554	device
+2025-12-10 01:46:28,407 - platform_adb.bluestacks_interface - INFO - Connecting to device 127.0.0.1:5555
+2025-12-10 01:46:28,431 - platform_adb.bluestacks_interface - DEBUG - ADB command result: connected to 127.0.0.1:5555
+2025-12-10 01:46:28,431 - platform_adb.bluestacks_interface - INFO - Successfully connected to 127.0.0.1:5555
+2025-12-10 01:46:28,433 - ocr.ocr_engine - INFO - Loaded 55 OCR regions from c:\PythonProjects\EvonyTools\locations.xml
+2025-12-10 01:46:34,406 - easyocr.easyocr - WARNING - Using CPU. Note: This module is much faster with a GPU.
+2025-12-10 01:46:35,510 - ocr.ocr_engine - INFO - EasyOCR engine initialized
+2025-12-10 01:46:35,511 - navigation.game_navigator - INFO - Loaded 69 coordinate presets from c:\PythonProjects\EvonyTools\locations.xml
+2025-12-10 01:46:35,599 - platform_adb.bluestacks_interface - DEBUG - ADB command result: Physical size: 540x960
+2025-12-10 01:46:35,599 - platform_adb.bluestacks_interface - DEBUG - wm size result: Physical size: 540x960
+
+2025-12-10 01:46:35,599 - navigation.game_navigator - INFO - Detected screen size: 540x960
+2025-12-10 01:46:35,599 - controllers.application_controller - INFO - Platform initialized successfully
+2025-12-10 01:46:38,949 - ui.main_window - INFO - Updating generals table with 0 generals
+2025-12-10 01:46:38,950 - ui.main_window - INFO - Generals table update completed
+2025-12-10 01:46:38,952 - controllers.application_controller - INFO - Resetting collection state
+2025-12-10 01:46:38,952 - navigation.game_navigator - INFO - Navigating to generals list
+2025-12-10 01:46:38,952 - navigation.game_navigator - DEBUG - Using preset ThreeDots: {'name': 'ThreeDots', 'xLoc': 0.846, 'yLoc': 0.634, 'xDest': 0.98, 'yDest': 0.704, 'ClickAndDrag': False} -> tapping at (493, 642) on 540x960 screen
+2025-12-10 01:46:39,231 - platform_adb.bluestacks_interface - DEBUG - ADB command result: 
+2025-12-10 01:46:39,231 - platform_adb.bluestacks_interface - DEBUG - send_tap(493, 642) executed, result: ''
+2025-12-10 01:46:40,232 - navigation.game_navigator - DEBUG - Using preset Generals: {'name': 'Generals', 'xLoc': 0.6111, 'yLoc': 0.4271, 'xDest': 0.7685, 'yDest': 0.5104, 'ClickAndDrag': False} -> tapping at (372, 450) on 540x960 screen
+2025-12-10 01:46:40,540 - platform_adb.bluestacks_interface - DEBUG - ADB command result: 
+2025-12-10 01:46:40,540 - platform_adb.bluestacks_interface - DEBUG - send_tap(372, 450) executed, result: ''
+2025-12-10 01:46:42,042 - navigation.game_navigator - INFO - Setting generals list state
+2025-12-10 01:46:42,043 - navigation.game_navigator - DEBUG - Using preset All: {'name': 'All', 'xLoc': 0.0278, 'yLoc': 0.2031, 'xDest': 0.1852, 'yDest': 0.2656, 'ClickAndDrag': False} -> tapping at (57, 224) on 540x960 screen
+2025-12-10 01:46:42,330 - platform_adb.bluestacks_interface - DEBUG - ADB command result: 
+2025-12-10 01:46:42,330 - platform_adb.bluestacks_interface - DEBUG - send_tap(57, 224) executed, result: ''
+2025-12-10 01:46:43,571 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:46:43,571 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 01:46:43,571 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 01:46:43,571 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 01:46:43,577 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:46:43,577 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-12-10 01:46:43,577 - PIL.PngImagePlugin - DEBUG - STREAM b'gAMA' 54 4
+2025-12-10 01:46:43,577 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 70 9
+2025-12-10 01:46:43,577 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 91 781
+2025-12-10 01:46:43,577 - navigation.game_navigator - INFO - DEBUG: Loaded reference image: c:\PythonProjects\EvonyTools\ActiveGenerals\Resources\GeneralsListMode.png (size: (23, 24), mode: RGBA)
+2025-12-10 01:46:43,578 - navigation.game_navigator - INFO - DEBUG: Converted image region to RGB
+2025-12-10 01:46:43,578 - navigation.game_navigator - INFO - DEBUG: Converted reference to RGB
+2025-12-10 01:46:43,578 - navigation.game_navigator - INFO - DEBUG: Final image sizes - Region: (23, 24), Reference: (23, 24)
+2025-12-10 01:46:43,579 - navigation.game_navigator - INFO - DEBUG: Saved comparison images to c:\PythonProjects\EvonyTools\ActiveGenerals\debug_images
+2025-12-10 01:46:43,579 - navigation.game_navigator - INFO - DEBUG: Region image: c:\PythonProjects\EvonyTools\ActiveGenerals\debug_images\GeneralsListMode_region.png (size: (23, 24))
+2025-12-10 01:46:43,579 - navigation.game_navigator - INFO - DEBUG: Reference image: c:\PythonProjects\EvonyTools\ActiveGenerals\debug_images\GeneralsListMode_reference.png (size: (23, 24))
+2025-12-10 01:46:43,580 - navigation.game_navigator - INFO - DEBUG: GeneralsListMode - MSE: 2808.56, Max diff: 214.0, Mean diff: 27.14
+2025-12-10 01:46:43,580 - navigation.game_navigator - INFO - DEBUG: Region shape: (24, 23, 3), Reference shape: (24, 23, 3)
+2025-12-10 01:46:43,580 - navigation.game_navigator - INFO - DEBUG: Images are identical: False
+2025-12-10 01:46:43,580 - navigation.game_navigator - INFO - DEBUG: GeneralsListMode comparison result: False (MSE 2808.56 < 10.0)
+2025-12-10 01:46:43,580 - navigation.game_navigator - INFO - DEBUG: Threshold analysis - Current MSE: 2808.56, Threshold: 10.0, Ratio: 280.86
+2025-12-10 01:46:43,581 - navigation.game_navigator - INFO - DEBUG: Would match with thresholds: 1.0: False, 5.0: False, 10.0: False, 25.0: False, 50.0: False, 100.0: False
+2025-12-10 01:46:43,581 - navigation.game_navigator - INFO - List Mode filter already active
+2025-12-10 01:46:43,581 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:46:43,581 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 01:46:43,581 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 01:46:43,581 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 01:46:43,587 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:46:43,587 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-12-10 01:46:43,587 - PIL.PngImagePlugin - DEBUG - STREAM b'gAMA' 54 4
+2025-12-10 01:46:43,587 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 70 9
+2025-12-10 01:46:43,587 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 91 852
+2025-12-10 01:46:43,587 - navigation.game_navigator - INFO - DEBUG: Loaded reference image: c:\PythonProjects\EvonyTools\ActiveGenerals\Resources\GeneralsListFavorites.png (size: (26, 23), mode: RGBA)
+2025-12-10 01:46:43,587 - navigation.game_navigator - INFO - DEBUG: Converted image region to RGB
+2025-12-10 01:46:43,588 - navigation.game_navigator - INFO - DEBUG: Converted reference to RGB
+2025-12-10 01:46:43,588 - navigation.game_navigator - INFO - DEBUG: Resized region from (25, 22) to (26, 23)
+2025-12-10 01:46:43,588 - navigation.game_navigator - INFO - DEBUG: Final image sizes - Region: (26, 23), Reference: (26, 23)
+2025-12-10 01:46:43,589 - navigation.game_navigator - INFO - DEBUG: Saved comparison images to c:\PythonProjects\EvonyTools\ActiveGenerals\debug_images
+2025-12-10 01:46:43,589 - navigation.game_navigator - INFO - DEBUG: Region image: c:\PythonProjects\EvonyTools\ActiveGenerals\debug_images\GeneralsListFavorites_region.png (size: (26, 23))
+2025-12-10 01:46:43,589 - navigation.game_navigator - INFO - DEBUG: Reference image: c:\PythonProjects\EvonyTools\ActiveGenerals\debug_images\GeneralsListFavorites_reference.png (size: (26, 23))
+2025-12-10 01:46:43,590 - navigation.game_navigator - INFO - DEBUG: GeneralsListFavorites - MSE: 6544.67, Max diff: 229.0, Mean diff: 50.74
+2025-12-10 01:46:43,590 - navigation.game_navigator - INFO - DEBUG: Region shape: (23, 26, 3), Reference shape: (23, 26, 3)
+2025-12-10 01:46:43,590 - navigation.game_navigator - INFO - DEBUG: Images are identical: False
+2025-12-10 01:46:43,590 - navigation.game_navigator - INFO - DEBUG: GeneralsListFavorites comparison result: False (MSE 6544.67 < 10.0)
+2025-12-10 01:46:43,590 - navigation.game_navigator - INFO - DEBUG: Threshold analysis - Current MSE: 6544.67, Threshold: 10.0, Ratio: 654.47
+2025-12-10 01:46:43,590 - navigation.game_navigator - INFO - DEBUG: Would match with thresholds: 1.0: False, 5.0: False, 10.0: False, 25.0: False, 50.0: False, 100.0: False
+2025-12-10 01:46:43,590 - navigation.game_navigator - INFO - Favorites filter active, deactivating it
+2025-12-10 01:46:43,590 - navigation.game_navigator - DEBUG - Using preset GeneralsListFavorites: {'name': 'GeneralsListFavorites', 'xLoc': 0.3241, 'yLoc': 0.2844, 'xDest': 0.3722, 'yDest': 0.3083, 'ClickAndDrag': False} -> tapping at (188, 284) on 540x960 screen
+2025-12-10 01:46:43,848 - platform_adb.bluestacks_interface - DEBUG - ADB command result: 
+2025-12-10 01:46:43,848 - platform_adb.bluestacks_interface - DEBUG - send_tap(188, 284) executed, result: ''
+2025-12-10 01:46:44,848 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:46:44,848 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 01:46:44,848 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 01:46:44,848 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 01:46:44,854 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:46:44,854 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-12-10 01:46:44,855 - PIL.PngImagePlugin - DEBUG - STREAM b'gAMA' 54 4
+2025-12-10 01:46:44,855 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 70 9
+2025-12-10 01:46:44,855 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 91 796
+2025-12-10 01:46:44,855 - navigation.game_navigator - INFO - DEBUG: Loaded reference image: c:\PythonProjects\EvonyTools\ActiveGenerals\Resources\GeneralsListIdle.png (size: (23, 23), mode: RGBA)
+2025-12-10 01:46:44,855 - navigation.game_navigator - INFO - DEBUG: Converted image region to RGB
+2025-12-10 01:46:44,855 - navigation.game_navigator - INFO - DEBUG: Converted reference to RGB
+2025-12-10 01:46:44,855 - navigation.game_navigator - INFO - DEBUG: Resized region from (23, 24) to (23, 23)
+2025-12-10 01:46:44,855 - navigation.game_navigator - INFO - DEBUG: Final image sizes - Region: (23, 23), Reference: (23, 23)
+2025-12-10 01:46:44,856 - navigation.game_navigator - INFO - DEBUG: Saved comparison images to c:\PythonProjects\EvonyTools\ActiveGenerals\debug_images
+2025-12-10 01:46:44,856 - navigation.game_navigator - INFO - DEBUG: Region image: c:\PythonProjects\EvonyTools\ActiveGenerals\debug_images\GeneralsListIdle_region.png (size: (23, 23))
+2025-12-10 01:46:44,856 - navigation.game_navigator - INFO - DEBUG: Reference image: c:\PythonProjects\EvonyTools\ActiveGenerals\debug_images\GeneralsListIdle_reference.png (size: (23, 23))
+2025-12-10 01:46:44,856 - navigation.game_navigator - INFO - DEBUG: GeneralsListIdle - MSE: 1277.72, Max diff: 202.0, Mean diff: 17.50
+2025-12-10 01:46:44,856 - navigation.game_navigator - INFO - DEBUG: Region shape: (23, 23, 3), Reference shape: (23, 23, 3)
+2025-12-10 01:46:44,858 - navigation.game_navigator - INFO - DEBUG: Images are identical: False
+2025-12-10 01:46:44,858 - navigation.game_navigator - INFO - DEBUG: GeneralsListIdle comparison result: False (MSE 1277.72 < 10.0)
+2025-12-10 01:46:44,858 - navigation.game_navigator - INFO - DEBUG: Threshold analysis - Current MSE: 1277.72, Threshold: 10.0, Ratio: 127.77
+2025-12-10 01:46:44,858 - navigation.game_navigator - INFO - DEBUG: Would match with thresholds: 1.0: False, 5.0: False, 10.0: False, 25.0: False, 50.0: False, 100.0: False
+2025-12-10 01:46:44,858 - navigation.game_navigator - INFO - Idle filter active, deactivating it
+2025-12-10 01:46:44,858 - navigation.game_navigator - DEBUG - Using preset GeneralsListIdle: {'name': 'GeneralsListIdle', 'xLoc': 0.4296, 'yLoc': 0.2833, 'xDest': 0.4722, 'yDest': 0.3073, 'ClickAndDrag': False} -> tapping at (243, 283) on 540x960 screen
+2025-12-10 01:46:45,136 - platform_adb.bluestacks_interface - DEBUG - ADB command result: 
+2025-12-10 01:46:45,137 - platform_adb.bluestacks_interface - DEBUG - send_tap(243, 283) executed, result: ''
+2025-12-10 01:46:46,137 - navigation.game_navigator - INFO - Filter states set: mode=False, favorites=True, idle=True
+2025-12-10 01:46:46,353 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:46:46,353 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 01:46:46,353 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 01:46:46,353 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 01:46:46,359 - ocr.ocr_engine - DEBUG - Cropped image to region: GeneralsListCount
+2025-12-10 01:46:46,360 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListCount.png
+2025-12-10 01:46:46,361 - ocr.ocr_engine - DEBUG - Enhanced 235 light text pixels
+2025-12-10 01:46:46,362 - ocr.ocr_engine - DEBUG - Removed 0 green pixels from progress bars
+2025-12-10 01:46:46,362 - ocr.ocr_engine - DEBUG - Image preprocessing applied
+2025-12-10 01:46:46,363 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListCount_postprocessed.png
+2025-12-10 01:46:46,420 - controllers.application_controller - INFO - Found 47 generals to process (count text: 47/86)
+2025-12-10 01:46:46,420 - export.excel_exporter - INFO - Exporting 0 generals to Spreadsheets\ActiveGenerals_20251210_014646.xlsx (incremental=False)
+2025-12-10 01:46:46,421 - export.excel_exporter - INFO - Loading template: Resources/EvonyActiveGenerals.xltx
+2025-12-10 01:46:46,436 - export.excel_exporter - INFO - Wrote count text to B3: 47/86
+2025-12-10 01:46:46,436 - export.excel_exporter - INFO - Cleared data rows from 7 to 6
+2025-12-10 01:46:46,436 - export.excel_exporter - INFO - Populated data for 0 generals
+2025-12-10 01:46:46,438 - export.excel_exporter - INFO - Applied cell formatting
+2025-12-10 01:46:46,438 - export.excel_exporter - INFO - Inserted images for 0 generals
+2025-12-10 01:46:46,457 - export.excel_exporter - INFO - Excel export completed: Spreadsheets\ActiveGenerals_20251210_014646.xlsx
+2025-12-10 01:46:46,457 - controllers.application_controller - INFO - Created Excel file: Spreadsheets\ActiveGenerals_20251210_014646.xlsx
+2025-12-10 01:46:46,457 - navigation.game_navigator - DEBUG - Using preset GeneralsFirstGeneral: {'name': 'GeneralsFirstGeneral', 'xLoc': 0.0407, 'yLoc': 0.2198, 'xDest': 0.4222, 'yDest': 0.5563, 'ClickAndDrag': False} -> tapping at (124, 372) on 540x960 screen
+2025-12-10 01:46:46,749 - platform_adb.bluestacks_interface - DEBUG - ADB command result: 
+2025-12-10 01:46:46,749 - platform_adb.bluestacks_interface - DEBUG - send_tap(124, 372) executed, result: ''
+2025-12-10 01:46:47,970 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:46:47,970 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 01:46:47,971 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 01:46:47,971 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 01:46:47,976 - ocr.ocr_engine - DEBUG - Cropped image to region: GeneralsListName
+2025-12-10 01:46:47,980 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListName.png
+2025-12-10 01:46:47,980 - ocr.ocr_engine - DEBUG - Applying general text enhancement for region: GeneralsListName
+2025-12-10 01:46:47,981 - ocr.ocr_engine - DEBUG - Enhanced general text: converted 1062 pixels to black out of 15370 total pixels
+2025-12-10 01:46:47,982 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListName_postprocessed.png
+2025-12-10 01:46:48,051 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:46:48,052 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 01:46:48,052 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 01:46:48,052 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 01:46:48,061 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListType.png
+2025-12-10 01:47:07,868 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:47:07,868 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 01:47:07,869 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 01:47:07,869 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 01:47:07,878 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListPowerLocation.png
+2025-12-10 01:47:07,879 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:47:07,879 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 41 1909
+2025-12-10 01:47:07,879 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:47:07,880 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-12-10 01:47:07,880 - PIL.PngImagePlugin - DEBUG - STREAM b'gAMA' 54 4
+2025-12-10 01:47:07,880 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 70 9
+2025-12-10 01:47:07,880 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 91 4912
+2025-12-10 01:47:07,889 - ocr.ocr_engine - DEBUG - Template match for GeneralsListPowerLocation vs Resources/GeneralsListPowerLocation.png: correlation=-0.011, threshold=0.8, match=False
+2025-12-10 01:49:36,424 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 01:49:36,424 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 01:49:36,426 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 01:49:36,426 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 01:54:46,742 - ocr.ocr_engine - DEBUG - Cropped image to region: GeneralsListPower2
+2025-12-10 01:56:01,149 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListPower2.png
+2025-12-10 01:58:09,510 - ocr.ocr_engine - DEBUG - Applying general text enhancement for region: GeneralsListPower2
+2025-12-10 01:58:54,091 - ocr.ocr_engine - DEBUG - Enhanced general text: converted 405 pixels to black out of 3861 total pixels
+2025-12-10 01:59:39,271 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListPower2_postprocessed.png
+2025-12-10 02:00:59,914 - controllers.application_controller - ERROR - Error collecting data for general 1: 'OCRResult' object has no attribute 'value'
+2025-12-10 02:00:59,915 - export.excel_exporter - INFO - Appending general 'Andre Massena' to row 7 in Spreadsheets\ActiveGenerals_20251210_014646.xlsx
+2025-12-10 02:00:59,942 - export.excel_exporter - DEBUG - Populating row 7 with general: name=Andre Massena, level=23, power=None
+2025-12-10 02:00:59,942 - export.excel_exporter - DEBUG -   exp_ratio=, cultivation=None
+2025-12-10 02:00:59,942 - export.excel_exporter - DEBUG -   specialty=None
+2025-12-10 02:00:59,943 - export.excel_exporter - DEBUG -   covenant=None
+2025-12-10 02:00:59,943 - export.excel_exporter - DEBUG - Populated single general data in row 7
+2025-12-10 02:00:59,944 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 02:00:59,944 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 41 3053
+2025-12-10 02:00:59,944 - export.excel_exporter - DEBUG - Inserted images for single general in row 7
+2025-12-10 02:00:59,953 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 02:00:59,954 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 41 3053
+2025-12-10 02:00:59,968 - export.excel_exporter - INFO - Successfully appended general to Spreadsheets\ActiveGenerals_20251210_014646.xlsx
+2025-12-10 02:00:59,969 - navigation.game_navigator - DEBUG - Using preset GeneralsListMoveRight: {'name': 'GeneralsListMoveRight', 'xLoc': 0.9389, 'yLoc': 0.4635, 'xDest': 0.9907, 'yDest': 0.5208, 'ClickAndDrag': False} -> tapping at (520, 472) on 540x960 screen
+2025-12-10 02:00:59,970 - ui.main_window - INFO - Updating generals table with 1 generals
+2025-12-10 02:00:59,971 - ui.main_window - DEBUG - Updating row 0 with general: Andre Massena, power: None, uncertain: True
+2025-12-10 02:00:59,975 - ui.main_window - INFO - Generals table update completed
+2025-12-10 02:01:00,284 - platform_adb.bluestacks_interface - DEBUG - ADB command result: 
+2025-12-10 02:01:00,285 - platform_adb.bluestacks_interface - DEBUG - send_tap(520, 472) executed, result: ''
+2025-12-10 02:01:01,488 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 02:01:01,489 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 02:01:01,489 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 02:01:01,489 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 02:01:01,497 - ocr.ocr_engine - DEBUG - Cropped image to region: GeneralsListName
+2025-12-10 02:01:01,500 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListName.png
+2025-12-10 02:01:01,500 - ocr.ocr_engine - DEBUG - Applying general text enhancement for region: GeneralsListName
+2025-12-10 02:01:01,501 - ocr.ocr_engine - DEBUG - Enhanced general text: converted 788 pixels to black out of 15370 total pixels
+2025-12-10 02:01:01,502 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListName_postprocessed.png
+2025-12-10 02:01:01,564 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 02:01:01,564 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 02:01:01,565 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 02:01:01,565 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 02:01:01,574 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListType.png
+2025-12-10 02:01:01,575 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 02:01:01,575 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 02:01:01,576 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 02:01:01,576 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 02:01:01,585 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListPowerLocation.png
+2025-12-10 02:01:01,586 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 02:01:01,586 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 41 5662
+2025-12-10 02:01:01,587 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 02:01:01,587 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-12-10 02:01:01,587 - PIL.PngImagePlugin - DEBUG - STREAM b'gAMA' 54 4
+2025-12-10 02:01:01,588 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 70 9
+2025-12-10 02:01:01,588 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 91 4912
+2025-12-10 02:01:01,590 - ocr.ocr_engine - DEBUG - Template match for GeneralsListPowerLocation vs Resources/GeneralsListPowerLocation.png: correlation=0.776, threshold=0.8, match=False
+2025-12-10 02:01:04,924 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 02:01:04,925 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 02:01:04,925 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 02:01:04,926 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 02:01:04,933 - ocr.ocr_engine - DEBUG - Cropped image to region: GeneralsListPower2
+2025-12-10 02:01:04,935 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListPower2.png
+2025-12-10 02:01:04,935 - ocr.ocr_engine - DEBUG - Applying general text enhancement for region: GeneralsListPower2
+2025-12-10 02:01:04,936 - ocr.ocr_engine - DEBUG - Enhanced general text: converted 9 pixels to black out of 3861 total pixels
+2025-12-10 02:01:04,937 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListPower2_postprocessed.png
+2025-12-10 02:01:21,251 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-12-10 02:01:21,252 - PIL.PngImagePlugin - DEBUG - STREAM b'sBIT' 41 4
+2025-12-10 02:01:21,252 - PIL.PngImagePlugin - DEBUG - b'sBIT' 41 4 (unknown)
+2025-12-10 02:01:21,253 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 57 8192
+2025-12-10 02:01:21,260 - ocr.ocr_engine - DEBUG - Cropped image to region: GeneralsListExp2
+2025-12-10 02:01:21,262 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListExp2.png
+2025-12-10 02:01:21,262 - ocr.ocr_engine - DEBUG - Applying general text enhancement for region: GeneralsListExp2
+2025-12-10 02:01:21,263 - ocr.ocr_engine - DEBUG - Enhanced general text: converted 11 pixels to black out of 3942 total pixels
+2025-12-10 02:01:21,264 - ocr.ocr_engine - DEBUG - Saved debug image: debug_images/ocr_GeneralsListExp2_postprocessed.png

@@ -33,6 +33,9 @@ def setup_logging(config):
 
 def main():
     """Main application entry point"""
+    # Set environment variable to avoid OpenMP conflicts
+    os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+    
     # Load configuration
     from config.config_manager import ConfigManager
     config_manager = ConfigManager()

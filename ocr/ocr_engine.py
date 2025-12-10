@@ -163,7 +163,7 @@ class OCREngine:
                 return None
 
             # Crop to region if specified
-            if region and region in self.regions:
+            if region in self.regions:
                 image = self._crop_image(image, self.regions[region])
                 logger.debug(f"Cropped image to region: {region}")
                 
@@ -570,7 +570,7 @@ class OCREngine:
             if np.isnan(correlation):
                 correlation = 1.0
 
-            match = correlation >= threshold
+            match = bool(correlation >= threshold)
             logger.debug(f"Template match for {region} vs {template_path}: correlation={correlation:.3f}, threshold={threshold}, match={match}")
 
             return match
