@@ -315,12 +315,27 @@ class ApplicationController:
         # Check which power location to use
         template_path = "Resources/GeneralsListPowerLocation.png"
         use_location_1 = False
+        # Massena should be lower, so location 2
         if Path(template_path).exists():
             use_location_1 = self.ocr_engine.check_template_match(screenshot, "GeneralsListPowerLocation", template_path)
         
         power_region = "GeneralsListPower1" if use_location_1 else "GeneralsListPower2"
         power_result = self.ocr_engine.extract_text(screenshot, power_region)
-        general.power = power_result.value if power_result else None
+        if power_result and power_result.text:
+            # Parse number from text, handling comma-separated numbers
+            import re
+            matches = re.findall(r'\d+(?:,\d{3})*', power_result.text)
+            if matches:
+                # Take the largest value (most likely to be the power number)
+                clean_number = max(matches).replace(',', '')
+                try:
+                    general.power = int(clean_number)
+                except ValueError:
+                    general.power = None
+            else:
+                general.power = None
+        else:
+            general.power = None
         general.confidence_scores['power'] = power_result.confidence if power_result else 0.0
 
         # Extract experience ratio

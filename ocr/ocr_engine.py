@@ -34,7 +34,7 @@ class OCREngine:
         self.config = config
         self.engine_type = config.get('ocr_engine', 'easyocr')
         self.confidence_threshold = config.get('confidence_threshold', 0.8)
-        self.postprocessed_confidence_threshold = config.get('postprocessed_confidence_threshold', 0.5)  # Lower threshold for postprocessed images
+        self.postprocessed_confidence_threshold = config.get('postprocessed_confidence_threshold', 0.4)  # Lower threshold for postprocessed images
         self.preprocessing_enabled = config.get('preprocessing_enabled', True)
         self.character_recognition_enhancement = config.get('character_recognition_enhancement', True)
         self.languages = config.get('ocr_languages', ['en'])
@@ -182,8 +182,7 @@ class OCREngine:
                     logger.debug(f"Applying general text enhancement for region: {region}")
                     image = self._enhance_general_text(image)
                     # Add character recognition enhancement for regions with numbers/letters
-                    if self.character_recognition_enhancement:
-                        image = self._enhance_character_recognition(image)
+                    image = self._enhance_character_recognition(image)
                 else:
                     # Standard preprocessing for other regions
                     image = self.preprocess_image(image)
@@ -204,6 +203,11 @@ class OCREngine:
                 
                 # Use lower confidence threshold for postprocessed images
                 threshold = self.postprocessed_confidence_threshold if self.preprocessing_enabled else self.confidence_threshold
+                
+                # Use even lower threshold for regions with character recognition enhancement
+                character_enhanced_regions = ["GeneralsListExp", "GeneralsListName", "GeneralsListLevel", "GeneralsListPower", "GeneralsListPower1", "GeneralsListPower2", "GeneralsListExp1", "GeneralsListExp2"]
+                if region in character_enhanced_regions:
+                    threshold = min(threshold, 0.3)  # Even lower threshold for character-enhanced regions
                 
                 # Combine all detected text
                 text_parts = []
@@ -279,7 +283,7 @@ class OCREngine:
                 return None
 
             # Crop to region if specified
-            if region and region in self.regions:
+            if region in self.regions:
                 image = self._crop_image(image, self.regions[region])
                 
                 # Save debug image for image extraction
@@ -606,16 +610,27 @@ class OCREngine:
 
             # 2. Skip erosion entirely - it was removing thin characters like '1' and 'I'
 
-            # 3. Use minimal morphological operations
+            # 3. Enhance thin vertical characters like '1' and 'I'
+            # Use a vertical kernel to detect and strengthen thin vertical lines
+            vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 3))  # 1x3 kernel for vertical lines
+            vertical_lines = cv2.morphologyEx(closed, cv2.MORPH_OPEN, vertical_kernel)
+            
+            # Dilate thin vertical lines slightly to make them more recognizable
+            vertical_dilated = cv2.dilate(vertical_lines, vertical_kernel, iterations=1)
+            
+            # Combine with original to preserve other characters
+            enhanced_vertical = cv2.addWeighted(closed, 1.0, vertical_dilated, 0.3, 0)
+
+            # 4. Use minimal morphological operations for horizontal elements
             # Detect horizontal strokes with minimal kernel
             horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
-            horizontal_lines = cv2.morphologyEx(closed, cv2.MORPH_OPEN, horizontal_kernel)
+            horizontal_lines = cv2.morphologyEx(enhanced_vertical, cv2.MORPH_OPEN, horizontal_kernel)
 
-            # 4. Combine with minimal enhancement
+            # 5. Combine with minimal enhancement
             # Very slight strengthening of horizontal elements
-            enhanced = cv2.addWeighted(closed, 1.0, horizontal_lines, 0.1, 0)
+            enhanced = cv2.addWeighted(enhanced_vertical, 1.0, horizontal_lines, 0.1, 0)
 
-            # 5. Ensure we don't lose any text - use OR operation to preserve original
+            # 6. Ensure we don't lose any text - use OR operation to preserve original
             final = cv2.bitwise_or(enhanced, binary)
 
             # Convert back to PIL Image
