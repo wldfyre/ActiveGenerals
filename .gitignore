@@ -35,3 +35,12 @@ debug_images/ocr_GeneralsListStars.png
 debug_images/ocr_GeneralsListType.png
 evony_tracker.log
 evony_tracker.log
+# Build outputs
+build/
+dist/
+*.exe
+*.spec
+# Spreadsheets
+Spreadsheets/
+# Logs
+*.log
