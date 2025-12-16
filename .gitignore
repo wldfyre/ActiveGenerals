@@ -33,8 +33,6 @@ debug_images/ocr_GeneralsListSpecialtyName_postprocessed.png
 debug_images/ocr_GeneralsListSpecialtyName.png
 debug_images/ocr_GeneralsListStars.png
 debug_images/ocr_GeneralsListType.png
-evony_tracker.log
-evony_tracker.log
 # Build outputs
 build/
 dist/
