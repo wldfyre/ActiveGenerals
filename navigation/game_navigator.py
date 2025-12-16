@@ -12,6 +12,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+from utils.resource_manager import resource_manager
+
 logger = logging.getLogger(__name__)
 
 class GameNavigator:
@@ -197,8 +199,8 @@ class GameNavigator:
             # Crop the screenshot to the region
             region = screenshot_image.crop((x1, y1, x2, y2))
 
-            # Load reference image
-            reference_path = Path(__file__).parent.parent / "Resources" / f"{preset_name}.png"
+            # Load reference image using resource manager
+            reference_path = resource_manager.get_resource_path(f"Resources/{preset_name}.png")
             if not reference_path.exists():
                 logger.warning(f"Reference image not found: {reference_path}")
                 return False

@@ -8,32 +8,37 @@ from pathlib import Path
 from typing import Dict, Any
 import logging
 
+from utils.resource_manager import get_default_config
+
 logger = logging.getLogger(__name__)
 
 class ConfigManager:
     """Manages application configuration"""
 
-    DEFAULT_CONFIG = {
-        "platform_type": "bluestacks",
-        "adb_path": "",
-        "device_id": "127.0.0.1:5555",
-        "ocr_engine": "easyocr",
-        "confidence_threshold": 0.8,
-        "preprocessing_enabled": True,
-        "ocr_languages": ["en"],
-        "screen_transition_delay": 0.5,
-        "navigation_retry_count": 3,
-        "screenshot_scale": 1.0,
-        "default_export_path": "~/Documents/Evony",
-        "excel_template_path": "Resources/EvonyActiveGenerals.xltx",
-        "auto_open_excel": False,
-        "debug_mode": False,
-        "log_level": "INFO"
-    }
-
     def __init__(self, config_file: str = "config.json"):
         self.config_file = Path(__file__).parent.parent / config_file
-        self._config = self.DEFAULT_CONFIG.copy()
+        # Use embedded defaults instead of hardcoded dict
+        self._config = get_default_config()
+
+    def load_config(self) -> Dict[str, Any]:
+        """Load configuration from file"""
+        try:
+            if self.config_file.exists():
+                with open(self.config_file, 'r', encoding='utf-8') as f:
+                    loaded_config = json.load(f)
+                    self._config.update(loaded_config)
+                logger.info(f"Configuration loaded from {self.config_file}")
+            else:
+                logger.info("Configuration file not found, using embedded defaults")
+                # Don't create config file automatically in bundled mode
+                if not getattr(__import__('sys'), '_MEIPASS', None):
+                    self.save_config()  # Create default config file only in development
+        except Exception as e:
+            logger.error(f"Error loading configuration: {e}")
+            # Reset to embedded defaults on error
+            self._config = get_default_config()
+
+        return self._config.copy()
 
     def load_config(self) -> Dict[str, Any]:
         """Load configuration from file"""

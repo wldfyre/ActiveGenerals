@@ -15,6 +15,7 @@ from io import BytesIO
 from PIL import Image as PILImage
 
 from models.general import General
+from utils.resource_manager import resource_manager
 
 logger = logging.getLogger(__name__)
 
@@ -157,18 +158,34 @@ class ExcelExporter:
                 worksheet.cell(row=row, column=10, value="")
             
             # Specialties - use combined names
+            specialty_cell = worksheet.cell(row=row, column=11)
             if general.specialty_names:
-                worksheet.cell(row=row, column=11, value=general.specialty_names)
+                specialty_cell.value = general.specialty_names
+                specialty_cell.number_format = '@'  # Text format
+                specialty_cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
             else:
-                worksheet.cell(row=row, column=11, value="")
+                specialty_cell.value = ""
             
             # Covenant - use combined names
+            covenant_cell = worksheet.cell(row=row, column=13)
             if general.covenant_names:
-                worksheet.cell(row=row, column=13, value=general.covenant_names)
+                covenant_cell.value = general.covenant_names
+                covenant_cell.number_format = '@'  # Text format
+                covenant_cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
             else:
-                worksheet.cell(row=row, column=13, value="")
+                covenant_cell.value = ""
             
             worksheet.cell(row=row, column=15, value="Yes" if general.is_uncertain else "No")
+
+            # Apply alignments to other cells
+            # Top vertical for A,B,D,F,G,H,I,J,K,N (1,2,4,6,7,8,9,10,11,14)
+            # Center horizontal for B,D,F,G,H,I,J (2,4,6,7,8,9,10)
+            for col in [1, 2, 4, 6, 7, 8, 9, 10, 11, 14]:
+                cell = worksheet.cell(row=row, column=col)
+                if col in [2, 4, 6, 7, 8, 9, 10]:
+                    cell.alignment = Alignment(horizontal="center", vertical="top")
+                else:
+                    cell.alignment = Alignment(horizontal="left", vertical="top")
 
             logger.debug(f"Populated single general data in row {row}")
         except Exception as e:
@@ -249,8 +266,18 @@ class ExcelExporter:
     def create_workbook(self, template_path: Optional[str] = None) -> Optional[Any]:
         """Create or load Excel workbook"""
         try:
+            # Try to load template using resource manager
+            if template_path:
+                resource_path = resource_manager.get_resource_path(template_path)
+                if resource_path.exists():
+                    logger.info(f"Loading template from resources: {resource_path}")
+                    return openpyxl.load_workbook(str(resource_path))
+                else:
+                    logger.warning(f"Template not found in resources: {template_path}")
+
+            # Fallback: try direct path for development
             if template_path and Path(template_path).exists():
-                logger.info(f"Loading template: {template_path}")
+                logger.info(f"Loading template from direct path: {template_path}")
                 return openpyxl.load_workbook(template_path)
             else:
                 logger.info("Creating new workbook")
@@ -328,12 +355,19 @@ class ExcelExporter:
     def load_covenant_attributes_image(self) -> bytes:
         """Load the GeneralsListCovenantAttributes.png image"""
         try:
-            attributes_path = Path(self.config.get('resources_path', 'Resources')) / "GeneralsListCovenantAttributes.png"
-            if attributes_path.exists():
-                with open(attributes_path, 'rb') as f:
+            # Try resource manager first
+            attributes_path = "Resources/GeneralsListCovenantAttributes.png"
+            image_data = resource_manager.read_resource_bytes(attributes_path)
+            if image_data:
+                return image_data
+
+            # Fallback: try direct path for development
+            direct_path = Path(self.config.get('resources_path', 'Resources')) / "GeneralsListCovenantAttributes.png"
+            if direct_path.exists():
+                with open(direct_path, 'rb') as f:
                     return f.read()
             else:
-                logger.warning(f"Covenant attributes image not found: {attributes_path}")
+                logger.warning(f"Covenant attributes image not found: {direct_path}")
                 return b""
         except Exception as e:
             logger.error(f"Failed to load covenant attributes image: {e}")
@@ -391,8 +425,6 @@ class ExcelExporter:
                 else:
                     worksheet.cell(row=row, column=13, value="")
                 
-                worksheet.cell(row=row, column=15, value="Yes" if general.is_uncertain else "No")
-
             logger.info(f"Populated data for {len(generals)} generals")
         except Exception as e:
             logger.error(f"Failed to populate data: {e}")
@@ -424,10 +456,15 @@ class ExcelExporter:
             for row in range(7, num_generals + 7):
                 for col in range(1, 16):
                     cell = worksheet.cell(row=row, column=col)
-                    # Columns K (11) and N (14) have word wrap enabled
-                    if col in [11, 14]:
+                    # Columns K (11) and M (13) have word wrap enabled
+                    if col in [11, 13]:
+                        # For K and M, wrap text
                         cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
+                    elif col in [2, 4, 6, 7, 8, 9, 10]:
+                        # Center horizontally for B,D,F,G,H,I,J
+                        cell.alignment = Alignment(horizontal="center", vertical="top")
                     else:
+                        # Top alignment for A,B,D,F,G,H,I,J,K,N (1,2,4,6,7,8,9,10,11,14)
                         cell.alignment = Alignment(horizontal="left", vertical="top")
                     cell.border = border
 

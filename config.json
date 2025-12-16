@@ -4,7 +4,9 @@
   "device_id": "127.0.0.1:5555",
   "ocr_engine": "easyocr",
   "confidence_threshold": 0.8,
+  "postprocessed_confidence_threshold": 0.5,
   "preprocessing_enabled": true,
+  "character_recognition_enhancement": false,
   "ocr_languages": [
     "en"
   ],
@@ -15,7 +17,5 @@
   "excel_template_path": "Resources/EvonyActiveGenerals.xltx",
   "auto_open_excel": true,
   "debug_mode": true,
-  "log_level": "DEBUG",
-  "character_recognition_enhancement": false,
-  "postprocessed_confidence_threshold": 0.5
+  "log_level": "DEBUG"
 }

@@ -34,6 +34,7 @@ class General:
     # Metadata
     confidence_scores: Optional[Dict[str, float]] = None
     is_uncertain: bool = False
+    is_purple_general: bool = False  # True if this general has purple specialties (only 3 specialties)
     timestamp: Optional[datetime] = None
 
     def __post_init__(self):

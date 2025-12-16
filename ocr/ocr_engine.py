@@ -299,6 +299,59 @@ class OCREngine:
             logger.error(f"Image extraction error: {e}")
             return None
 
+    def check_pixel_color(self, image_bytes: bytes, region: str, expected_color: Tuple[int, int, int], tolerance: int = 10) -> bool:
+        """Check if a pixel at the specified coordinates matches the expected color within tolerance"""
+        try:
+            image = self._bytes_to_image(image_bytes)
+            if not image:
+                return False
+
+            # For single pixel checks (when xLoc == xDest and yLoc == yDest), use the exact pixel
+            if region in self.regions:
+                x1, y1, x2, y2 = self.regions[region]
+                # If it's a single pixel (x1 == x2 and y1 == y2), check that exact pixel
+                if x1 == x2 and y1 == y2:
+                    pixel_x, pixel_y = x1, y1
+                else:
+                    # For regions, check the center pixel
+                    pixel_x = (x1 + x2) // 2
+                    pixel_y = (y1 + y2) // 2
+            else:
+                logger.warning(f"Region '{region}' not found in coordinates")
+                return False
+
+            # Ensure coordinates are within image bounds
+            width, height = image.size
+            if pixel_x >= width or pixel_y >= height or pixel_x < 0 or pixel_y < 0:
+                logger.warning(f"Pixel coordinates ({pixel_x}, {pixel_y}) out of bounds for image size {width}x{height}")
+                return False
+
+            # Convert to RGB if necessary
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+
+            # Get pixel data as numpy array
+            image_np = np.array(image)
+
+            # Get the pixel color
+            pixel_color = image_np[pixel_y, pixel_x]
+
+            # Calculate color distance
+            color_distance = np.sqrt(
+                (pixel_color[0] - expected_color[0]) ** 2 +
+                (pixel_color[1] - expected_color[1]) ** 2 +
+                (pixel_color[2] - expected_color[2]) ** 2
+            )
+
+            matches = color_distance <= tolerance
+            logger.debug(f"Pixel color check at ({pixel_x}, {pixel_y}): expected {expected_color}, got {pixel_color}, distance {color_distance:.2f}, matches: {matches}")
+
+            return matches
+
+        except Exception as e:
+            logger.error(f"Pixel color check error: {e}")
+            return False
+
     def _remove_green_elements(self, image: Image.Image) -> Image.Image:
         """Remove green UI elements (like progress bars) that interfere with OCR"""
         try:

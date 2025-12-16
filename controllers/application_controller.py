@@ -12,6 +12,7 @@ from platform_adb.bluestacks_interface import BluestacksInterface
 from ocr.ocr_engine import OCREngine
 from navigation.game_navigator import GameNavigator
 from export.excel_exporter import ExcelExporter
+from utils.resource_manager import resource_manager
 
 logger = logging.getLogger(__name__)
 
@@ -307,17 +308,14 @@ class ApplicationController:
             general.level = None
         general.confidence_scores['name'] = name_result.confidence if name_result else 0.0
 
-               # Extract type image
-        type_image = self.ocr_engine.extract_image(screenshot, "GeneralsListType")
-        general.type_image = type_image or b""
-
         # Extract power
         # Check which power location to use
         template_path = "Resources/GeneralsListPowerLocation.png"
         use_location_1 = False
         # Massena should be lower, so location 2
-        if Path(template_path).exists():
-            use_location_1 = self.ocr_engine.check_template_match(screenshot, "GeneralsListPowerLocation", template_path)
+        template_resource_path = resource_manager.get_resource_path(template_path)
+        if template_resource_path.exists():
+            use_location_1 = self.ocr_engine.check_template_match(screenshot, "GeneralsListPowerLocation", str(template_resource_path))
         
         power_region = "GeneralsListPower1" if use_location_1 else "GeneralsListPower2"
         power_result = self.ocr_engine.extract_text(screenshot, power_region)
@@ -344,6 +342,11 @@ class ApplicationController:
         general.exp_ratio = exp_result.text.strip() if exp_result else ""
         general.confidence_scores['exp_ratio'] = exp_result.confidence if exp_result else 0.0
 
+        # Extract type image
+        type_region = "GeneralsListType1" if use_location_1 else "GeneralsListType2"
+        type_image = self.ocr_engine.extract_image(screenshot, type_region)
+        general.type_image = type_image or b""
+        
         # Extract stars image
         stars_image = self.ocr_engine.extract_image(screenshot, "GeneralsListStars")
         if stars_image:
@@ -374,6 +377,10 @@ class ApplicationController:
         """Extract cultivation data from screenshot"""
         cultivation_parts = []
 
+        # Check if this is a purple general (indicated by purple pixel on cultivation screen)
+        general.is_purple_general = not self.ocr_engine.check_pixel_color(screenshot, "GeneralsListCultivatePurple", (123, 81, 8), tolerance=20)
+        logger.info(f"General {general.name} is_purple_general: {general.is_purple_general}")
+
         # Extract each stat
         stats = ['Leadership', 'Attack', 'Defense', 'Politics']
         total_confidence = 0.0
@@ -399,9 +406,18 @@ class ApplicationController:
         specialty_images = []
         total_confidence = 0.0
 
-        for i in range(1, 6):  # 5 specialties
+        # Use the purple general flag that was determined during cultivation screen processing
+        if general.is_purple_general:
+            logger.info("Processing purple general specialties - processing 3 specialties")
+            specialty_range = range(1, 4)  # P1, P2, P3
+            specialty_presets = ["GeneralsListSpecialtyP1", "GeneralsListSpecialtyP2", "GeneralsListSpecialtyP3"]
+        else:
+            logger.info("Processing regular general specialties - processing 5 specialties")
+            specialty_range = range(1, 6)  # 1, 2, 3, 4, 5
+            specialty_presets = [f"GeneralsListSpecialty{i}" for i in range(1, 6)]
+
+        for i, specialty_click_preset in zip(specialty_range, specialty_presets):
             # Click on the specialty item to select it
-            specialty_click_preset = f"GeneralsListSpecialty{i}"
             if not self.navigator.tap_preset(specialty_click_preset):
                 logger.warning(f"Failed to click on specialty {i}")
                 specialty_names.append("Unknown Specialty")
@@ -420,7 +436,7 @@ class ApplicationController:
                 continue
 
             # Extract image
-            image_preset = f"GeneralsListSpecialty{i}"
+            image_preset = specialty_click_preset
             image_data = self.ocr_engine.extract_image(new_screenshot, image_preset)
 
             # Extract name (yellow text on dark background)
@@ -448,7 +464,7 @@ class ApplicationController:
             img_resized.save(buf, format='PNG')
             combined_image = buf.getvalue()
         general.specialty_combined_image = combined_image
-        general.confidence_scores['specialty'] = total_confidence / 5
+        general.confidence_scores['specialty'] = total_confidence / len(specialty_range)
 
     def _extract_covenant_data(self, general: General, screenshot) -> None:
         """Extract covenant data from screenshot"""
@@ -489,7 +505,7 @@ class ApplicationController:
             image_data = self.ocr_engine.extract_image(new_screenshot, "GeneralsListCovenantCoGenImage")
             name_result = self.ocr_engine.extract_text(new_screenshot, "GeneralsListCovenantCoGenName")
 
-            if image_data and name_result and name_result.text:
+            if image_data and name_result.text:
                 # Resize covenant image to 50%
                 from PIL import Image
                 import io
@@ -500,20 +516,17 @@ class ApplicationController:
                 img_resized.save(buf, format='PNG')
                 image_data = buf.getvalue()
                 
-                covenant_parts.append(name_result.text.strip())
                 covenant_names.append(name_result.text.strip())
                 covenant_images.append(image_data)
                 total_confidence += name_result.confidence
             else:
-                covenant_parts.append("Unknown Covenant")
                 covenant_names.append("Unknown Covenant")
                 total_confidence += 0.0
 
         # Close covenant sub-screen
         self.navigator.close_covenant_subscreen()
 
-        general.covenant_data = chr(10).join(covenant_parts)
-        general.covenant_names = chr(1).join(covenant_names)
+        general.covenant_names = chr(10).join(covenant_names)
         combined_image = self.exporter.combine_images_side_by_side(covenant_images)
         if combined_image:
             # Resize combined covenant image to 50%

@@ -18,6 +18,7 @@ from PyQt5.QtGui import QFont, QPixmap, QIcon
 from main_window_ui import Ui_MainWindow
 from controllers.application_controller import ApplicationController
 from models.general import General
+from utils.resource_manager import resource_manager
 from config.config_manager import ConfigManager
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ class MainWindow(QMainWindow):
     def _setup_ui(self):
         """Setup additional UI elements"""
         # Set window icon if available
-        icon_path = Path(__file__).parent.parent / "Resources" / "icon.png"
+        icon_path = resource_manager.get_resource_path("Resources/icon.png")
         if icon_path.exists():
             self.setWindowIcon(QIcon(str(icon_path)))
 
