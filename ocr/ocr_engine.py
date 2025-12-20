@@ -177,7 +177,7 @@ class OCREngine:
             # Preprocess if enabled
             if self.preprocessing_enabled:
                 # Apply region-specific preprocessing
-                if region in ["GeneralsListExp", "GeneralsListName", "GeneralsListLevel", "GeneralsListPower", "GeneralsListPower1", "GeneralsListPower2", "GeneralsListExp1", "GeneralsListExp2"]:
+                if region in ["GeneralsListExp", "GeneralsListName", "GeneralsListLevel", "GeneralsListPower", "GeneralsListPower1", "GeneralsListPower2", "GeneralsListExp1", "GeneralsListExp2", "GeneralsListSpecialtyName"]:
                     # Special preprocessing for general name/level text (specific light colors)
                     logger.debug(f"Applying general text enhancement for region: {region}")
                     image = self._enhance_general_text(image)
@@ -299,7 +299,7 @@ class OCREngine:
             logger.error(f"Image extraction error: {e}")
             return None
 
-    def check_pixel_color(self, image_bytes: bytes, region: str, expected_color: Tuple[int, int, int], tolerance: int = 10) -> bool:
+    def check_pixel_color(self, image_bytes: bytes, region: str, expected_color: Tuple[int, int, int]) -> bool:
         """Check if a pixel at the specified coordinates matches the expected color within tolerance"""
         try:
             image = self._bytes_to_image(image_bytes)
@@ -336,15 +336,9 @@ class OCREngine:
             # Get the pixel color
             pixel_color = image_np[pixel_y, pixel_x]
 
-            # Calculate color distance
-            color_distance = np.sqrt(
-                (pixel_color[0] - expected_color[0]) ** 2 +
-                (pixel_color[1] - expected_color[1]) ** 2 +
-                (pixel_color[2] - expected_color[2]) ** 2
-            )
-
-            matches = color_distance <= tolerance
-            logger.debug(f"Pixel color check at ({pixel_x}, {pixel_y}): expected {expected_color}, got {pixel_color}, distance {color_distance:.2f}, matches: {matches}")
+            # Check for exact color match
+            matches = tuple(pixel_color) == expected_color
+            logger.debug(f"Pixel color check at ({pixel_x}, {pixel_y}): expected {expected_color}, got {pixel_color}, matches: {matches}")
 
             return matches
 
@@ -452,6 +446,8 @@ class OCREngine:
             # Define the specific text colors mentioned by user
             text_color1 = np.array([255, 251, 214])  # First text color
             text_color2 = np.array([222, 214, 181])  # Second text color
+            text_color3 = np.array([247, 206, 49])   # Specialty name yellow color
+            text_color4 = np.array([255, 255, 255])  # Specialty name 2nd yellow color
             
             # Create masks for pixels close to the text colors
             # Use a tolerance for color matching
@@ -460,11 +456,17 @@ class OCREngine:
             # Calculate color distances
             diff1 = np.abs(image_np.astype(np.int32) - text_color1)
             diff2 = np.abs(image_np.astype(np.int32) - text_color2)
+            diff3 = np.abs(image_np.astype(np.int32) - text_color3)
+            diff4 = np.abs(image_np.astype(np.int32) - text_color4)
             
             # Create masks for pixels within tolerance of text colors
             mask1 = np.all(diff1 <= tolerance, axis=2)
             mask2 = np.all(diff2 <= tolerance, axis=2)
-            text_mask = np.logical_or(mask1, mask2)
+            mask3 = np.all(diff3 <= tolerance, axis=2)
+            mask4 = np.all(diff4 <= tolerance, axis=2)
+            
+            # Combine masks for all text colors
+            text_mask = np.logical_or(np.logical_or(np.logical_or(mask1, mask2), np.logical_or(mask3, mask4)))
             
             # Create high contrast result image
             result = np.full_like(image_np, 255)  # Start with white background
@@ -507,9 +509,9 @@ class OCREngine:
             hsv = cv2.cvtColor(image_np, cv2.COLOR_RGB2HSV)
             
             # Create masks for light colors (yellow/white text)
-            # Light yellow: Hue 20-40, Saturation 30-255, Value 140-255 (expanded ranges)
+            # Light yellow: Hue 20-60, Saturation 30-255, Value 140-255 (expanded ranges to include [247,206,49])
             lower_light_yellow = np.array([20, 30, 140])
-            upper_light_yellow = np.array([40, 255, 255])
+            upper_light_yellow = np.array([60, 255, 255])
             
             # Also catch very bright white/light colors
             lower_bright = np.array([0, 0, 160])  # Very bright pixels

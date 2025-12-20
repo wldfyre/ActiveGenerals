@@ -378,7 +378,7 @@ class ApplicationController:
         cultivation_parts = []
 
         # Check if this is a purple general (indicated by purple pixel on cultivation screen)
-        general.is_purple_general = not self.ocr_engine.check_pixel_color(screenshot, "GeneralsListCultivatePurple", (123, 81, 8), tolerance=20)
+        general.is_purple_general = self.ocr_engine.check_pixel_color(screenshot, "GeneralsListCultivatePurple", (123, 81, 8))
         logger.info(f"General {general.name} is_purple_general: {general.is_purple_general}")
 
         # Extract each stat
@@ -443,7 +443,7 @@ class ApplicationController:
             name_preset = "GeneralsListSpecialtyName"
             name_result = self.ocr_engine.extract_text(new_screenshot, name_preset)
 
-            if image_data and name_result and name_result.text:
+            if image_data and name_result.text:
                 specialty_names.append(name_result.text.strip())
                 specialty_images.append(image_data)
                 total_confidence += name_result.confidence
